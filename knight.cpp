@@ -5,7 +5,12 @@
 #include "shape.cpp"
 using namespace std;
 
-GLfloat g_box;
+GLfloat g_base;
+GLfloat g_onbase;
+GLfloat g_back;
+GLfloat g_neck;
+GLfloat g_head;
+GLfloat g_hair;
 
 void ReShape(int width, int height) {
     glViewport(0, 0, width, height);
@@ -35,11 +40,28 @@ void RenderScene() {
 
     SetMaterialColor(1,1,0,0);
     glPushMatrix();
-    glTranslatef(0,0, 0);
+    glRotatef(-70,0,1,0);
+    glTranslatef(0,0,0);
     glRotatef(90,1,0,0);
-    glCallList(g_box);
+    glCallList(g_base);
+    glRotatef(-65,1,0,0);
+    glTranslatef(-0.6,0,-0.8);
+    glCallList(g_onbase);
+    glRotatef(-25,1,0,0);
+    glCallList(g_back);
+    glTranslatef(0.2,0,0);
+    glCallList(g_neck);
+    glTranslatef(0,3,0);
+    glRotatef(30,1,0,0);
+    glCallList(g_head);
+    glTranslatef(0.1,-2,1.5);
+    glRotatef(90,1,0,0);
+    glCallList(g_head);
+    SetMaterialColor(1,128.0/255.0,0,0);
+    glRotatef(-120,1,0,0);
+    glTranslatef(0.1,0.5,-0.64);
+    glCallList(g_hair);
     glPopMatrix();
-
     glFlush();
 }
 
@@ -65,7 +87,12 @@ void Init() {
     GLfloat shininess = 50.0f;
     glMateriali(GL_FRONT, GL_SHININESS, shininess);
 
-    g_box = MakeOctagon(1.5,0.8);
+    g_base = MakeOctagon(1,0.5);
+    g_onbase = MakeBox(1.3,1,1.3);
+    g_back = MakeBox(1.3,0.5,1.1);
+    g_neck = MakeBox(0.8,0.6,3);
+    g_head = MakeBox(0.8,1.3,0.6);
+    g_hair = MakeBox(0.1,0.8,2.5);
 }
 
 int main(int argc, char* argv[]) {

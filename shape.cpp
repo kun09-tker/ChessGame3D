@@ -264,3 +264,23 @@ GLuint MakeFrustumShape(const float& bottom_size, const float& top_size, const f
    return dp_list;
 }
  
+GLuint MakeRWindow(const float &bottom_size, const float &top_size, const float &height, const float length)
+{
+    GLuint dp_list;
+    dp_list = glGenLists(1);
+    glNewList(dp_list, GL_COMPILE);
+    double half_bottom_size = 0.5 * bottom_size;
+    double half_top_size = 0.5 * top_size;
+    glBegin(GL_QUADS);
+    // Front Face
+    glNormal3f(0.0, 0.0, 1.0);
+    glVertex3f(0.0, 0.0, 0.0);
+    glVertex3f(half_bottom_size + length, 0.0, 0.0);
+    glVertex3f(half_top_size + length - 0.7, height, 0.0);
+    glVertex3f(0.0, height, 0.0);
+    glEnd();
+
+    glEndList();
+
+    return dp_list;
+}
