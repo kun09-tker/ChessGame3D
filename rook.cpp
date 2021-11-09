@@ -32,49 +32,103 @@ void SetMaterialColor(float r,float g,float b, float apha)
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diff_use);
 }
 
+void DrawCoordinate() {
+    glDisable(GL_LIGHTING);
+    glBegin(GL_LINES);
+    glColor3f(1.0, 0.0, 0.0);
+    glVertex3f(0.0, 0.0, 0.0);
+    glVertex3f(10.0, 0.0, 0.0);
+    glEnd();
+
+    glBegin(GL_LINES);
+    glColor3f(0.0, 1.0, 0.0);
+    glVertex3f(0.0, 0.0, 0.0);
+    glVertex3f(0.0, 10.0, 0.0);
+    glEnd();
+
+    glBegin(GL_LINES);
+    glColor3f(0.0, 0.0, 1.0);
+    glVertex3f(0.0, 0.0, 0.0);
+    glVertex3f(0.0, 0.0, 10.0);
+    glEnd();
+
+    glEnable(GL_LIGHTING);
+}
+
+
 void RenderScene() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-
-    gluLookAt(5.0, 7.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(5.0, 5.0, 3.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
     glPushMatrix();
-    SetMaterialColor(1,1,1,0);
-    glRotatef(-70,0,1,0);
+    DrawCoordinate();
+    SetMaterialColor(1,1,1,0);    
     glTranslatef(0,0,0);
     glRotatef(90,1,0,0);
     glCallList(g_base);
 
-    SetMaterialColor(1,1,1,0);
-    glRotatef(-65,1,0,0);
-    glTranslatef(-0.6,0,-0.8);
-    glCallList(g_onbase);
-
-    SetMaterialColor(1,1,1,0);
-    glRotatef(-25,1,0,0);
-    glCallList(g_back);
-
-    SetMaterialColor(1,1,1,0);
-    glTranslatef(0.2,0,0);
-    glCallList(g_neck);
+    glRotatef(-90,1,0,0);
 
     SetMaterialColor(0.6,0.6,0.6,0);
-    glTranslatef(0,3,0);
-    glRotatef(30,1,0,0);
+    glTranslatef(-0.75,0,0.75);
+    glRotatef(-90,1,0,0);
+    glCallList(g_onbase);
+    
+    glRotatef(90,1,0,0);
+    glTranslatef(0.75,0,-0.75);
+
+    SetMaterialColor(1,1,1,0); 
+    glTranslatef(0,0.2,0);
+    glCallList(g_back);
+
+    glTranslatef(0,-0.2,0);
+    
+    SetMaterialColor(0.6,0.6,0.6,0);
+    glTranslatef(0,1.8,0);
+    glRotatef(-90,1,0,0);
+    glCallList(g_neck);
+
+    glRotatef(90,1,0,0);
+    glTranslatef(0,-1.8,0);
+    
+    SetMaterialColor(1,1,1,0);
+    glTranslatef(0.45,2.38,-0.2);
+    glRotatef(-90,0,0,1);
     glCallList(g_head);
 
-    SetMaterialColor(1,1,1,0);
-    glTranslatef(0.1,-2,1.5);
+    glRotatef(90,0,0,1);
+    glTranslatef(-0.45,-2.38,0.2);
+
+    glTranslatef(-0.45,2.28,-0.2);
+    glRotatef(90,0,0,1);
+    glCallList(g_head);
+
+    glRotatef(-90,0,0,1);
+    glTranslatef(0.45,-2.28,0.2);
+
+    glTranslatef(-0.2,2.28,0.45);
+    glRotatef(90,0,0,1);
     glRotatef(90,1,0,0);
     glCallList(g_head);
 
-    SetMaterialColor(0.6,0.6,0.6,0);
-    glRotatef(-120,1,0,0);
-    glTranslatef(0.1,0.5,-0.64);
-    glCallList(g_hair);
+    glRotatef(-90,1,0,0);
+    glRotatef(-90,0,0,1);
+    glTranslatef(0.2,-2.28,-0.45);
+
+    glTranslatef(-0.2,2.28,-0.65);
+    glRotatef(90,0,0,1);
+    glRotatef(90,1,0,0);
+    glCallList(g_head);
+
+    glRotatef(-90,1,0,0);
+    glRotatef(-90,0,0,1);
+    glTranslatef(0.2,-2.28,0.65);
+
     glPopMatrix();
     glFlush();
 }
+
 
 void Init() {
     glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -99,11 +153,10 @@ void Init() {
     glMateriali(GL_FRONT, GL_SHININESS, shininess);
 
     g_base = MakeOctagon(1,0.5);
-    g_onbase = MakeBox(1.3,1,1.3);
-    g_back = MakeBox(1.3,0.5,1.1);
-    g_neck = MakeBox(0.8,0.6,3);
-    g_head = MakeBox(0.8,1.3,0.6);
-    g_hair = MakeBox(0.1,0.8,2.5);
+    g_onbase = MakeBox(1.5,0.2,1.5);
+    g_back = MakeFrustumShape(1.1,0.5,2);
+    g_neck = MakeOctagon(0.5,0.5);
+    g_head = MakeBox(0.1,0.4,0.2);
 }
 
 int main(int argc, char* argv[]) {
