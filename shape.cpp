@@ -3,6 +3,15 @@
 #include <GL/glut.h>
 #include <math.h>
 
+void SetMaterialColor(float r,float g,float b, float apha)
+{
+    GLfloat ambien[] = {r, g, b, apha};
+    GLfloat diff_use[] = {r,g, b, apha};
+    
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambien);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diff_use);
+}
+
 GLuint MakeBox(const float length, const float width, const float height)
 {
   GLuint dp_list;
@@ -284,3 +293,4 @@ GLuint MakeRWindow(const float &bottom_size, const float &top_size, const float 
 
     return dp_list;
 }
+
