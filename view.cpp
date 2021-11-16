@@ -1,5 +1,5 @@
-#include <GL/GL.h>
-#include <GL/GLU.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 #include <GL/glut.h>
 #include <math.h>
 #include "shape.cpp"
@@ -144,5 +144,32 @@ GLint Rook_view(){
     glPopMatrix();
   glEndList();
 
+  return dp_list;
+}
+
+
+// Board ----------------------------------------------------------------------
+
+GLint Board_view(float width, float height)
+{
+  GLuint dp_list;
+  GLfloat square = MakeBox(width,width,height);
+  dp_list = glGenLists(1);
+  glNewList(dp_list, GL_COMPILE);
+  for (int i = 0; i < 8; i++){
+    for (int j = 0; j < 8; j++){
+      glPushMatrix();
+      if ((i+j) % 2 == 0){
+        SetMaterialColor(1,1,1,0);    // White color
+      }
+      else {
+        SetMaterialColor(0,0,0,0); // Black color
+      }
+      glTranslatef(i*4, 0, j*4); // Translate cell
+      glCallList(square);
+      glPopMatrix();
+    }
+  }
+  glEndList();
   return dp_list;
 }
