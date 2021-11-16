@@ -58,7 +58,7 @@ void Init() {
 
     g_rook = Rook_view();
     g_knight = Knight_view();
-    g_board = Board_view(4,1);
+    g_board = Board_view(3,1);
 }
 
 int main(int argc, char* argv[]) {

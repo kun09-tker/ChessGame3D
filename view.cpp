@@ -165,7 +165,7 @@ GLint Board_view(float width, float height)
       else {
         SetMaterialColor(0,0,0,0); // Black color
       }
-      glTranslatef(i*4, 0, j*4); // Translate cell
+      glTranslatef(i*width, 0, j*width); // Translate cell
       glCallList(square);
       glPopMatrix();
     }
