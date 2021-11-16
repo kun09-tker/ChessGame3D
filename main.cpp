@@ -1,5 +1,5 @@
-#include <GL/GL.h>
-#include <GL/GLU.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 #include <GL/glut.h>
 #include <math.h>
 #include "view.cpp"
@@ -8,6 +8,7 @@ using namespace std;
 
 GLfloat g_knight;
 GLfloat g_rook;
+GLfloat g_board;
 
 void ReShape(int width, int height) {
     glViewport(0, 0, width, height);
@@ -26,6 +27,7 @@ void RenderScene() {
     gluLookAt(15.0, 15.0, 13.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
     glPushMatrix();
     DrawCoordinate();
+    glCallList(g_board);
     glCallList(g_rook);
     glTranslatef(3,0,0);
     glCallList(g_knight);
@@ -56,6 +58,7 @@ void Init() {
 
     g_rook = Rook_view();
     g_knight = Knight_view();
+    g_board = Board_view(4,1);
 }
 
 int main(int argc, char* argv[]) {
@@ -63,7 +66,7 @@ int main(int argc, char* argv[]) {
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
     glutInitWindowSize(700, 700);
     glutInitWindowPosition(100, 100);
-    glutCreateWindow("Loc");
+    glutCreateWindow("3D Chess");
     Init();
     glutReshapeFunc(ReShape);
     glutDisplayFunc(RenderScene);
