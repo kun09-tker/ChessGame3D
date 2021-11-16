@@ -8,6 +8,7 @@ GLuint Knight_view()
 {
   GLfloat g_base;
   GLfloat g_onbase;
+  GLfloat g_onbase1;
   GLfloat g_back;
   GLfloat g_neck;
   GLfloat g_head;
@@ -16,6 +17,7 @@ GLuint Knight_view()
 
   g_base = MakeOctagon(1,0.5);
   g_onbase = MakeBox(1.3,1,1.3);
+  g_onbase1 = MakeBox(1.5,0.2,1.5);
   g_back = MakeBox(1.3,0.5,1.1);
   g_neck = MakeBox(0.8,0.6,3);
   g_head = MakeBox(0.8,1.3,0.6);
@@ -28,6 +30,16 @@ GLuint Knight_view()
     glTranslatef(0,0,0);
     glRotatef(90,1,0,0);
     glCallList(g_base);
+
+    glRotatef(-90,1,0,0);
+
+    SetMaterialColor(0.6,0.6,0.6,0);
+    glTranslatef(-0.75,0,0.75);
+    glRotatef(-90,1,0,0);
+    glCallList(g_onbase1);
+
+    glRotatef(-180,1,0,0);
+    glTranslatef(0.6,-0.5,0);
 
     SetMaterialColor(1,1,1,0);
     glRotatef(-65,1,0,0);
