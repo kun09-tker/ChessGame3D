@@ -1,11 +1,20 @@
+#include <iostream>
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/glut.h>
 #include <math.h>
 #include "shape.cpp"
+using namespace std;
 
-GLuint Knight_view()
+GLuint Knight_view(string name_color)
 {
+  int color[3] = {0,1,1};
+  int ycolor[3] = {1,1,0};
+  if(name_color == "yellow"){
+    color[0] = 1;
+    color[1] = 1;
+    color[2] = 0;
+  }
   GLfloat g_base;
   GLfloat g_onbase;
   GLfloat g_onbase1;
@@ -26,7 +35,7 @@ GLuint Knight_view()
   dp_list = glGenLists(1);
   glNewList(dp_list, GL_COMPILE);
     glPushMatrix();
-    SetMaterialColor(1,1,1,0);
+    SetMaterialColor(color[0],color[1],color[2],0);
     glTranslatef(0,0,0);
     glRotatef(90,1,0,0);
     glCallList(g_base);
@@ -41,16 +50,16 @@ GLuint Knight_view()
     glRotatef(-180,1,0,0);
     glTranslatef(0.6,-0.5,0);
 
-    SetMaterialColor(1,1,1,0);
+    SetMaterialColor(color[0],color[1],color[2],0);
     glRotatef(-65,1,0,0);
     glTranslatef(-0.6,0,-0.8);
     glCallList(g_onbase);
 
-    SetMaterialColor(1,1,1,0);
+    SetMaterialColor(color[0],color[1],color[2],0);
     glRotatef(-25,1,0,0);
     glCallList(g_back);
 
-    SetMaterialColor(1,1,1,0);
+    SetMaterialColor(color[0],color[1],color[2],0);
     glTranslatef(0.2,0,0);
     glCallList(g_neck);
 
@@ -59,7 +68,7 @@ GLuint Knight_view()
     glRotatef(30,1,0,0);
     glCallList(g_head);
 
-    SetMaterialColor(1,1,1,0);
+    SetMaterialColor(color[0],color[1],color[2],0);
     glTranslatef(0.1,-2,1.5);
     glRotatef(90,1,0,0);
     glCallList(g_head);
@@ -73,7 +82,14 @@ GLuint Knight_view()
  
   return dp_list;
 }
-GLint Rook_view(){
+GLint Rook_view(string name_color){
+  int color[3] = {0,1,1};
+  if(name_color == "yellow"){
+    color[0] = 1;
+    color[1] = 1;
+    color[2] = 0;
+  }
+
   GLfloat g_base;
   GLfloat g_onbase;
   GLfloat g_back;
@@ -91,7 +107,7 @@ GLint Rook_view(){
   dp_list = glGenLists(1);
   glNewList(dp_list, GL_COMPILE);
     glPushMatrix();
-    SetMaterialColor(1,1,1,0);    
+    SetMaterialColor(color[0],color[1],color[2],0);   
     glTranslatef(0,0,0);
     glRotatef(90,1,0,0);
     glCallList(g_base);
@@ -106,7 +122,7 @@ GLint Rook_view(){
     glRotatef(90,1,0,0);
     glTranslatef(0.75,0,-0.75);
 
-    SetMaterialColor(1,1,1,0); 
+    SetMaterialColor(color[0],color[1],color[2],0);
     glTranslatef(0,0.2,0);
     glCallList(g_back);
 
@@ -120,7 +136,7 @@ GLint Rook_view(){
     glRotatef(90,1,0,0);
     glTranslatef(0,-1.8,0);
     
-    SetMaterialColor(1,1,1,0);
+    SetMaterialColor(color[0],color[1],color[2],0);
     glTranslatef(0.45,2.38,-0.2);
     glRotatef(-90,0,0,1);
     glCallList(g_head);
