@@ -72,6 +72,7 @@ int main(int argc, char* argv[]) {
     Init();
     glutReshapeFunc(ReShape);
     glutDisplayFunc(RenderScene);
+    glClearColor(0.0, 0.6, 1.0, 1.0); // Blue background
     glutMainLoop();
     return 0;
 }
