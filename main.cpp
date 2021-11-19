@@ -158,7 +158,10 @@ int main(int argc, char* argv[]) {
     }
     glutReshapeFunc(ReShape);
     glutDisplayFunc(RenderScene);
+<<<<<<< HEAD
     glClearColor(0.0, 0.6, 1.0, 1.0); // Blue background
+=======
+>>>>>>> origin/main
     glutMouseWheelFunc(mouseWheel);
     glutMotionFunc(mouseMove);
     glutMainLoop();
