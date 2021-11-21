@@ -7,6 +7,11 @@
 #include<string>
 using namespace std;
 
+char ruleSwapPlayer(char c){
+    if(c=='B') return 'Y';
+    return 'B'; 
+}
+
 bool ruleCheckBoundary(int x, int y){
     if(x<8 && x>=0 && y<8 && y>=0) return true;
     return false;
@@ -20,6 +25,13 @@ void ruleClear(Cell Board[8][8]){
         }
     }
 }
+
+void ruleSwapChess(Cell Board[8][8],int xcurrent, int ycurrent, int xmove, int ymove){
+    Board[xmove][ymove] = Board[xcurrent][ycurrent];
+    Board[xcurrent][ycurrent] = Cell();
+    ruleClear(Board);
+}
+
 
 void ruleDirection(Cell Board[8][8] ,int xlocal, int ylocal){
     int tmp = 1;
@@ -163,12 +175,28 @@ void ruleDirection(Cell Board[8][8] ,int xlocal, int ylocal){
         }
         if(ruleCheckBoundary(xlocal+tmp,ylocal) && Board[xlocal+tmp][ylocal].name == "empty") Board[xlocal+tmp][ylocal].move = true; // tốt vị trí khác được đi 1 
                                                                                                                                     //ô nhưng không thể đi nếu vật cảng phía trước
+
+        // Luật bắt tốt qua đường
+        int d[2] = {1,-1};
+        for(int i = 0; i<2 ;i++){
+            if(ruleCheckBoundary(xlocal,ylocal+d[i])){
+                if(Board[xlocal][ylocal+d[i]].name[0]=='P' 
+                && Board[xlocal][ylocal+d[i]].name[1]!=player 
+                && Board[xlocal][ylocal+d[i]].name!="empty"){   // kiểm tra có phải gặp đối thủ là tốt hay không
+                    cout << "good";
+                    Board[xlocal+tmp][ylocal-d[i]*tmp].target = true;
+                }
+            }
+        }
+
+        if(ruleCheckBoundary(xlocal-tmp,ylocal)){
+            if(Board[xlocal-tmp][ylocal].name[0]=='P' 
+            && Board[xlocal-tmp][ylocal].name[1]!=player 
+            && Board[xlocal-tmp][ylocal].name!="empty"){   // kiểm tra phía sau cóc tốt đối thủ hay không, có thì ăn
+                Board[xlocal-tmp][ylocal] = Cell();
+            }
+        }
     }
 
 }
 
-void ruleSwap(Cell Board[8][8],int xcurrent, int ycurrent, int xmove, int ymove){
-    Board[xmove][ymove] = Board[xcurrent][ycurrent];
-    Board[xcurrent][ycurrent] = Cell();
-    ruleClear(Board);
-}

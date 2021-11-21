@@ -11,10 +11,10 @@
 
 using namespace std;
 
+char player = 'B';              // đội xanh đi đầu tiên
 int x,y;
 float dx=-1,dy=-1;              // khoảng cách hai ô
-float xtmp = 1, ytmp = 1;  // dấu của khoảng cách 1 là dương, -1 là âm
-int Max = 0;            // nhận khoảng cách lớn nhất
+float xtmp = 1, ytmp = 1;       // dấu của khoảng cách 1 là dương, -1 là âm
 int x_old = -1, y_old = -1;
 Cell MatrixBoard[8][8];
 GLfloat g_board;
@@ -124,10 +124,10 @@ void RenderScene() {
 void timer(int){
     if(Animation){
         glutPostRedisplay();
-        glutTimerFunc(100,timer,0);
-        dx = (int(dx*10)==0) ? 0 : dx = dx - (0.1*xtmp); 
-        dy = (int(dy*10)==0) ? 0 : dy = dy - (0.1*ytmp);
-        if(int(dx*10)==0 && int(dy*10)==0){
+        glutTimerFunc(5,timer,0);
+        dx = (int(dx*100)==0) ? 0 : dx = dx - (0.01*xtmp); 
+        dy = (int(dy*100)==0) ? 0 : dy = dy - (0.01*ytmp);
+        if(int(dx*100)==0 && int(dy*100)==0){
             Animation = false;
         }
     }
@@ -137,7 +137,7 @@ void processInput(int x, int y){
     if(ruleCheckBoundary(x,y)){
         if(x_old!=-1 && y_old!=-1) MatrixBoard[x_old][y_old].choose = false;
         MatrixBoard[x][y].choose = true;                              // chọn cờ
-        if(MatrixBoard[x][y].move || MatrixBoard[x][y].target){       // di chuyển cờ và ăn cờ đối phương
+        if((MatrixBoard[x][y].move || MatrixBoard[x][y].target)){       // di chuyển cờ và ăn cờ đối phương
             
             dx = float(x_old - x);
             dy = float(y_old - y);
@@ -146,22 +146,28 @@ void processInput(int x, int y){
             Animation = true;
             glutTimerFunc(0,timer,0);                           
             
-            ruleSwap(MatrixBoard,x_old,y_old,x,y);
-            ruleDirection(MatrixBoard,x,y);
+            ruleSwapChess(MatrixBoard,x_old,y_old,x,y);
+            if(MatrixBoard[x][y].name[1]!=player) ruleDirection(MatrixBoard,x,y);
             MatrixBoard[x_old][y_old].choose = false;
             MatrixBoard[x][y].choose = true;
+            player = ruleSwapPlayer(player);
+
+            cout << "Luot cua "<<player<<endl;
 
         }
-        else if(!MatrixBoard[x][y].move){       // xác định hướng đi của cờ
+        else if(!MatrixBoard[x][y].move && MatrixBoard[x][y].name[1]==player){       // xác định hướng đi của cờ
             ruleClear(MatrixBoard);
             ruleDirection(MatrixBoard,x,y);
         }
-        for (int i = 0; i < 8; i++){
-            for (int j = 0; j < 8; j++){
-                cout << MatrixBoard[i][j].name << " " ;
-            }
-            cout << endl;
+        else if(!MatrixBoard[x][y].move){
+            ruleClear(MatrixBoard);
         }
+        // for (int i = 0; i < 8; i++){
+        //     for (int j = 0; j < 8; j++){
+        //         cout << MatrixBoard[i][j].name << " " ;
+        //     }
+        //     cout << endl;
+        // }
     }
     x_old = x; y_old = y;
     glutPostRedisplay();
@@ -179,6 +185,7 @@ void tasten(unsigned char key, int xmouse, int ymouse)
     else if(dem == 1){
         y = key - '0';
         cout << "y = " << y << endl;
+        cout << player << endl;
         processInput(x,y);
         dem = 0;
     }
@@ -206,6 +213,9 @@ void Init() {
     GLfloat shininess = 50.0f;
     glMateriali(GL_FRONT, GL_SHININESS, shininess);
 
+    glEnable(GL_BLEND);
+    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
     string listName[6] = {
         "R","N","B","Q","K","P"
     };
@@ -237,6 +247,7 @@ void Init() {
 
 int main(int argc, char* argv[]) {
     while(true){
+        cout << "Luot cua "<<player<<endl;
         glutInit(&argc, argv);
         glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
         glutInitWindowSize(1000, 1000);

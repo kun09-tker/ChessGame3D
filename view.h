@@ -38,14 +38,14 @@ GLuint Knight_view(string name_color)
   if(name_color=="yellow") glRotatef(-90,0,1,0);
   else glRotatef(90,0,1,0);
 
-  SetMaterialColor(color[0],color[1],color[2],0);
+  SetMaterialColor(color[0],color[1],color[2],1);
   glTranslatef(0,0,0);
   glRotatef(90,1,0,0);
   glCallList(g_base);
 
   glRotatef(-90,1,0,0);
 
-  SetMaterialColor(0.6,0.6,0.6,0);
+  SetMaterialColor(0.6,0.6,0.6,1);
   glTranslatef(-0.75,0,0.75);
   glRotatef(-90,1,0,0);
   glCallList(g_onbase1);
@@ -53,30 +53,30 @@ GLuint Knight_view(string name_color)
   glRotatef(-180,1,0,0);
   glTranslatef(0.6,-0.5,0);
 
-  SetMaterialColor(color[0],color[1],color[2],0);
+  SetMaterialColor(color[0],color[1],color[2],1);
   glRotatef(-65,1,0,0);
   glTranslatef(-0.6,0,-0.8);
   glCallList(g_onbase);
 
-  SetMaterialColor(color[0],color[1],color[2],0);
+  SetMaterialColor(color[0],color[1],color[2],1);
   glRotatef(-25,1,0,0);
   glCallList(g_back);
 
-  SetMaterialColor(color[0],color[1],color[2],0);
+  SetMaterialColor(color[0],color[1],color[2],1);
   glTranslatef(0.2,0,0);
   glCallList(g_neck);
 
-  SetMaterialColor(0.6,0.6,0.6,0);
+  SetMaterialColor(0.6,0.6,0.6,1);
   glTranslatef(0,3,0);
   glRotatef(30,1,0,0);
   glCallList(g_head);
 
-  SetMaterialColor(color[0],color[1],color[2],0);
+  SetMaterialColor(color[0],color[1],color[2],1);
   glTranslatef(0.1,-2,1.5);
   glRotatef(90,1,0,0);
   glCallList(g_head);
 
-  SetMaterialColor(0.6,0.6,0.6,0);
+  SetMaterialColor(0.6,0.6,0.6,1);
   glRotatef(-120,1,0,0);
   glTranslatef(0.1,0.5,-0.64);
   glCallList(g_hair);
@@ -110,14 +110,14 @@ GLint Rook_view(string name_color){
   dp_list = glGenLists(1);
   glNewList(dp_list, GL_COMPILE);
   glPushMatrix();
-  SetMaterialColor(color[0],color[1],color[2],0);   
+  SetMaterialColor(color[0],color[1],color[2],1);   
   glTranslatef(0,0,0);
   glRotatef(90,1,0,0);
   glCallList(g_base);
 
   glRotatef(-90,1,0,0);
 
-  SetMaterialColor(0.6,0.6,0.6,0);
+  SetMaterialColor(0.6,0.6,0.6,1);
   glTranslatef(-0.75,0,0.75);
   glRotatef(-90,1,0,0);
   glCallList(g_onbase);
@@ -125,13 +125,13 @@ GLint Rook_view(string name_color){
   glRotatef(90,1,0,0);
   glTranslatef(0.75,0,-0.75);
 
-  SetMaterialColor(color[0],color[1],color[2],0);
+  SetMaterialColor(color[0],color[1],color[2],1);
   glTranslatef(0,0.2,0);
   glCallList(g_back);
 
   glTranslatef(0,-0.2,0);
   
-  SetMaterialColor(0.6,0.6,0.6,0);
+  SetMaterialColor(0.6,0.6,0.6,1);
   glTranslatef(0,1.8,0);
   glRotatef(-90,1,0,0);
   glCallList(g_neck);
@@ -139,7 +139,7 @@ GLint Rook_view(string name_color){
   glRotatef(90,1,0,0);
   glTranslatef(0,-1.8,0);
   
-  SetMaterialColor(color[0],color[1],color[2],0);
+  SetMaterialColor(color[0],color[1],color[2],1);
   glTranslatef(0.45,2.38,-0.2);
   glRotatef(-90,0,0,1);
   glCallList(g_head);
@@ -191,10 +191,10 @@ GLint Board_view(float width, float height)
     for (int j = 0; j < 8; j++){
       glPushMatrix();
       if ((i+j) % 2 == 0){
-        SetMaterialColor(1,1,1,0);    // White color
+        SetMaterialColor(1,1,1,1);    // White color
       }
       else {
-        SetMaterialColor(0,0,0,0); // Black color
+        SetMaterialColor(0,0,0,1); // Black color
       }
       glTranslatef(i*width, 0, j*width); // Translate cell
       glCallList(square);
@@ -209,16 +209,16 @@ GLint Board_view(float width, float height)
 
 GLint StatusCell_view(string name_color)
 {
+  float apha = 0.6;
   GLuint dp_list;
   GLfloat square = MakeBox(3,3,1);
   dp_list = glGenLists(1);
   glNewList(dp_list, GL_COMPILE);
   glPushMatrix();
-  if(name_color == "red") SetMaterialColor(1,0,0,0);    // Red color
-  else SetMaterialColor(0,1,0,0); // Green color
+  if(name_color == "red") SetMaterialColor(1,0,0,apha);    // Red color
+  else SetMaterialColor(0,1,0,apha); // Green color
   glCallList(square);
   glPopMatrix();
-  
   glEndList();
   return dp_list;
 }
