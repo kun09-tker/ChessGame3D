@@ -4,6 +4,7 @@
 #include <GL/glut.h>
 #include <math.h>
 #include "shape.h"
+#include "tool.h"
 using namespace std;
 
 GLuint Knight_view(string name_color)

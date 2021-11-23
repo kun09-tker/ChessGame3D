@@ -2,6 +2,7 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 #include <math.h>
+using namespace std;
 
 void DrawCoordinate() {
     glDisable(GL_LIGHTING);
@@ -24,4 +25,40 @@ void DrawCoordinate() {
     glEnd();
 
     glEnable(GL_LIGHTING);
+}
+
+void SetLightColor(float r,float g,float b, float apha)
+{
+    GLfloat qaAmbientLight[] = {r, g, b, apha};
+
+    glLightfv(GL_LIGHT0, GL_AMBIENT, qaAmbientLight);
+}
+void SetMaterialColor(float r,float g,float b, float apha)
+{
+    GLfloat ambien[] = {r, g, b, apha};
+    GLfloat diff_use[] = {r,g, b, apha};
+    
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambien);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diff_use);
+}
+
+void renderBitMap(float x, float y, void *font, char *string, float xScale = 0, float yScale = 0, float zScale = 0) {
+	char *c;
+	glRasterPos2f(x, y);
+	c = string;
+	glPushMatrix();
+	glTranslatef(x-50, y + 50,10);
+    glRotatef(90,1,0,0);
+	for (c = string; *c != '\0'; c++) {
+		glScalef(xScale, yScale, zScale);
+		glutBitmapCharacter(font, (int)*c);
+	}
+	glPopMatrix();
+}
+void drawTextColor(const char* text, int x, int y, float r, float g, float b, float apha , float xScale = 0, float yScale = 0, float zScale = 0){
+	char buf[1000] = { 0 };
+    sprintf_s(buf, text);
+    SetLightColor(r,g,b,apha);
+	renderBitMap(x, y, GLUT_BITMAP_TIMES_ROMAN_24, buf, xScale, yScale, zScale);
+    SetLightColor(0,0,0,1);
 }

@@ -7,9 +7,9 @@
 #include<string>
 using namespace std;
 
-char ruleSwapPlayer(char c){
-    if(c=='B') return 'Y';
-    return 'B'; 
+string ruleSwapPlayer(string s){
+    if(s=="BULE") return "YELLOW";
+    return "BULE"; 
 }
 
 bool ruleCheckBoundary(int x, int y){
@@ -26,7 +26,26 @@ void ruleClear(Cell Board[8][8]){
     }
 }
 
-void ruleSwapChess(Cell Board[8][8],int xcurrent, int ycurrent, int xmove, int ymove){
+void ruleSwapChess(Cell Board[8][8],int xcurrent, int ycurrent, int xmove, int ymove,int &x_down, int &y_down, GLfloat &shape){
+    
+    int tmp = 1;
+    char player = Board[xcurrent][ycurrent].name[1];
+    if(player=='Y') tmp = -1;
+
+    if(ruleCheckBoundary(xmove-tmp,ymove)){
+                
+        if(Board[xmove-tmp][ymove].name[0]=='P' 
+        && Board[xmove-tmp][ymove].name[1]!=player 
+        && Board[xmove-tmp][ymove].name!="empty"){   // kiểm tra phía sau cóc tốt đối thủ hay không, có thì ăn
+            
+            shape = Board[xmove-tmp][ymove].shape;
+            x_down = xmove-tmp;
+            y_down = ymove;
+
+            Board[xmove-tmp][ymove] = Cell();
+        }
+    }
+
     Board[xmove][ymove] = Board[xcurrent][ycurrent];
     Board[xcurrent][ycurrent] = Cell();
     ruleClear(Board);
@@ -183,19 +202,11 @@ void ruleDirection(Cell Board[8][8] ,int xlocal, int ylocal){
                 if(Board[xlocal][ylocal+d[i]].name[0]=='P' 
                 && Board[xlocal][ylocal+d[i]].name[1]!=player 
                 && Board[xlocal][ylocal+d[i]].name!="empty"){   // kiểm tra có phải gặp đối thủ là tốt hay không
-                    cout << "good";
-                    Board[xlocal+tmp][ylocal-d[i]*tmp].target = true;
+                    Board[xlocal+tmp][ylocal+d[i]].target = true;
                 }
             }
         }
 
-        if(ruleCheckBoundary(xlocal-tmp,ylocal)){
-            if(Board[xlocal-tmp][ylocal].name[0]=='P' 
-            && Board[xlocal-tmp][ylocal].name[1]!=player 
-            && Board[xlocal-tmp][ylocal].name!="empty"){   // kiểm tra phía sau cóc tốt đối thủ hay không, có thì ăn
-                Board[xlocal-tmp][ylocal] = Cell();
-            }
-        }
     }
 
 }
