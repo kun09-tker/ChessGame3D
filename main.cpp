@@ -4,14 +4,14 @@
 #include <GL/glut.h>
 #include <GL/freeglut.h>
 #include <math.h>
-#include <math.h>
+#include <vector>
 #include "view.h"
 #include "rule.h"
 
 using namespace std;
 
-string player = "BULE";              // đội xanh đi đầu tiên
-int x,y;
+string player = "BULE";         // đội xanh đi đầu tiên
+int x,y;                        // tọa độ ô cờ
 float dx=-1,dy=-1;              // khoảng cách hai ô
 float xtmp = 1, ytmp = 1;       // dấu của khoảng cách 1 là dương, -1 là âm
 float down = 0;
@@ -19,55 +19,46 @@ int x_old = -1, y_old = -1;     // lưu vị trí cũ xử lý trong process inp
 int x_old_copy, y_old_copy;     // lưu vị trí cũ sử dụng ngoài process input 
 int x_down, y_down;             // lưu vị trí cờ bị ăn
 Cell MatrixBoard[8][8];
-GLfloat g_board;
-GLfloat g_chessDown;
-float zoom = 10;
-bool animationMove = false;
-bool animationDown = false;
+GLfloat g_board;                // hình dạng bàn cờ
+GLfloat g_chessDown;            // lưu hình dạng con cờ bị ăn
 
-void mouseMove(int x, int y)
-{
-    cout << x << " " << y << endl;
-}
+float eyeX = 12, eyeY = 31, eyeZ = -21;
+float centerX = 12, centerY = 2, centerZ = 7;
+bool animationMove = false;     // trạng thái di chuyển cờ
+bool animationDown = false;     // trạng thái cờ bị ăn
 
-void mouseWheel(int button, int dir, int x, int y)
-{
-    if (dir > 0)
-    {
-        zoom -= 0.5; // Zoom in
-    }
-    else
-    {
-        zoom += 0.5;// Zoom out
-    }
-    glutPostRedisplay();
-    return;
-}
-
+vector<GLfloat> MatrixEat_Blue;
+vector<GLfloat> MatrixEat_Yellow;
 
 void ReShape(int width, int height) {
     glViewport(0, 0, width, height);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     float ratio = (float)width / (float)height;
-    // glOrtho(-10.0, 10.0, -10.0, 10.0, 10.0, -10.0);
+    //glOrtho(-10.0, 10.0, -10.0, 10.0, 10.0, -10.0);
     gluPerspective(45.0, ratio, 1, 100.0);
     glMatrixMode(GL_MODELVIEW);
 }
+
 
 // mỗi lần đi là cell width = 3
 void RenderScene() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-    gluLookAt(zoom, 15.0, zoom, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(eyeX, eyeY, eyeZ,centerX, centerY ,centerZ,0.0,1.0, 0.0);
     glPushMatrix();
-    DrawCoordinate();
+    //DrawCoordinate();
     glTranslatef(0,-1,0); // để cho bằng với mp Oxz 
     glCallList(g_board);
     glTranslatef(1.5,1.5,1.5); // để cho con cờ nằm vừa trong ô 
-    drawTextColor("TURN: ",10,10,1,1,1,1);
-    if(player=="BULE") drawTextColor("Player01",10,9,0,1,1,1);
-    else drawTextColor("Player02",10,9,1,1,0,1);
+    if(player=="BULE"){
+        drawTextColor("Player01",0,10,8,0,1,1,1);
+        drawTextColor("Player02",24,10,8,0.6,0.6,0.6,1);
+    }
+    else{
+        drawTextColor("Player01",0,10,8,0.6,0.6,0.6,1);
+        drawTextColor("Player02",24,10,8,1,1,0,1);
+    }
     if(animationMove){
         for (int i = 0; i < 8; i++){
             for (int j = 0; j < 8; j++){
@@ -133,6 +124,23 @@ void RenderScene() {
 
             }
         }
+        for(int i=0; i<MatrixEat_Yellow.size(); i++){
+            int pos_x = (i < 8) ? -1 : -2;
+            int pos_y = i%8;
+
+            glTranslatef(pos_x*3-1.5,-1.5,pos_y*3-1.5);
+            glCallList(MatrixEat_Yellow[i]);
+            glTranslatef(-pos_x*3+1.5,1.5,-pos_y*3+1.5);
+        }
+
+        for(int i=0; i<MatrixEat_Blue.size(); i++){
+            int pos_x = (i < 8) ? 9 : 10;
+            int pos_y = i%8;
+
+            glTranslatef(pos_x*3-1.5,-1.5,pos_y*3-1.5);
+            glCallList(MatrixEat_Blue[i]);
+            glTranslatef(-pos_x*3+1.5,1.5,-pos_y*3+1.5);
+        }
     }
 
     glPopMatrix();
@@ -182,7 +190,7 @@ void processInput(int x, int y){
             ytmp = (dy>0) ? 1 : -1;  
             animationMove = true;
 
-            ruleSwapChess(MatrixBoard,x_old,y_old,x,y,x_down,y_down,g_chessDown);
+            ruleSwapChess(MatrixBoard,MatrixEat_Blue,MatrixEat_Yellow,x_old,y_old,x,y,x_down,y_down,g_chessDown);
 
             glutTimerFunc(0,timer,0);                           
             
@@ -225,7 +233,45 @@ void tasten(unsigned char key, int xmouse, int ymouse)
         processInput(x,y);
         dem = 0;
     }
+    if(key == 'a'){
+        eyeX += 1;
+    }
+    else if (key == 'd'){
+        eyeX -= 1;
+    }
+    else if(key == 'w'){
+        eyeY += 1;
+    }
+    else if (key == 's'){
+        eyeY -= 1;
+    }
+    else if(key == 'q'){
+        eyeZ += 1;
+    }
+    else if (key == 'e'){
+        eyeZ -= 1;
+    }
+    else if(key == 'j'){
+        centerX += 1;
+    }
+    else if (key == 'l'){
+        centerX -= 1;
+    }
+    else if(key == 'i'){
+        centerY += 1;
+    }
+    else if (key == 'k'){
+        centerY -= 1;
+    }
+    else if(key == 'u'){
+        centerZ += 1;
+    }
+    else if (key == 'o'){
+        centerZ -= 1;
+    }
+    glutPostRedisplay();
 }
+
 
 void Init() {
     glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -294,7 +340,6 @@ int main(int argc, char* argv[]) {
         glutReshapeFunc(ReShape);
         glutDisplayFunc(RenderScene);
         glutKeyboardFunc(tasten);
-        glutMouseWheelFunc(mouseWheel);
         glutMainLoop();
     }
     return 0;

@@ -26,7 +26,11 @@ void ruleClear(Cell Board[8][8]){
     }
 }
 
-void ruleSwapChess(Cell Board[8][8],int xcurrent, int ycurrent, int xmove, int ymove,int &x_down, int &y_down, GLfloat &shape){
+void ruleSwapChess(Cell Board[8][8], vector<GLfloat> &Eat_bule, vector<GLfloat> &Eat_yellow,
+                    int xcurrent, int ycurrent,
+                    int xmove, int ymove,
+                    int &x_down, int &y_down, 
+                    GLfloat &shape){
     
     int tmp = 1;
     char player = Board[xcurrent][ycurrent].name[1];
@@ -43,11 +47,17 @@ void ruleSwapChess(Cell Board[8][8],int xcurrent, int ycurrent, int xmove, int y
             y_down = ymove;
 
             Board[xmove-tmp][ymove] = Cell();
+            if(Board[x_down][y_down].name[1] == 'B') Eat_bule.push_back(Board[x_down][y_down].shape);
+            else if (Board[x_down][y_down].name[1] == 'Y') Eat_yellow.push_back(Board[x_down][y_down].shape);
         }
     }
 
+    if(Board[xmove][ymove].name[1] == 'B') Eat_bule.push_back(Board[xmove][ymove].shape);
+    else if (Board[xmove][ymove].name[1] == 'Y') Eat_yellow.push_back(Board[xmove][ymove].shape);
+
     Board[xmove][ymove] = Board[xcurrent][ycurrent];
     Board[xcurrent][ycurrent] = Cell();
+
     ruleClear(Board);
 }
 

@@ -17,3 +17,4 @@ class Cell
             this->move = false;
         }
 };
+
