@@ -1,4 +1,5 @@
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #ifdef __APPLE__
@@ -31,11 +32,8 @@ int xOrigin = -1;
 #define FILL 1
 #define LINE 2
 
-#define SHRINK 1
-#define NORMAL 2
-
 // Pop up menu identifiers
-int fillMenu, shrinkMenu, mainMenu, colorMenu;
+int fillMenu, fontMenu, mainMenu, colorMenu;
 
 // color for the nose
 float red = 1.0f, blue = 0.5f, green = 0.5f;
@@ -45,6 +43,17 @@ float scale = 1.0f;
 
 // menu status
 int menuFlag = 0;
+
+// default font
+void *font = GLUT_BITMAP_TIMES_ROMAN_24;
+
+#define INT_GLUT_BITMAP_8_BY_13 1
+#define INT_GLUT_BITMAP_9_BY_15 2
+#define INT_GLUT_BITMAP_TIMES_ROMAN_10 3
+#define INT_GLUT_BITMAP_TIMES_ROMAN_24 4
+#define INT_GLUT_BITMAP_HELVETICA_10 5
+#define INT_GLUT_BITMAP_HELVETICA_12 6
+#define INT_GLUT_BITMAP_HELVETICA_18 7
 
 void changeSize(int w, int h) {
     // Prevent a divide by zero, when window is too short
@@ -99,6 +108,14 @@ void drawSnowMan() {
     glColor3f(1.0f, 1.0f, 1.0f);
 }
 
+void renderBitmapString(float x, float y, float z, void *font, char *string) {
+    char *c;
+    glRasterPos3f(x, y, z);
+    for (c = string; *c != '\0'; c++) {
+        glutBitmapCharacter(font, *c);
+    }
+}
+
 void computePos(float deltaMove) {
     x += deltaMove * lx * 0.1f;
     z += deltaMove * lz * 0.1f;
@@ -127,14 +144,17 @@ void renderScene(void) {
     glEnd();
 
     // Draw 36 SnowMen
-
+    char number[3];
     for (int i = -3; i < 3; i++)
         for (int j = -3; j < 3; j++) {
             glPushMatrix();
             glTranslatef(i * 10.0f, 0.0f, j * 10.0f);
             drawSnowMan();
+            sprintf(number, "%d", (i + 3) * 6 + (j + 3));
+            renderBitmapString(0.0f, 0.5f, 0.0f, (void *)font, number);
             glPopMatrix();
         }
+
     glutSwapBuffers();
 }
 
@@ -143,27 +163,15 @@ void renderScene(void) {
 // -----------------------------------
 
 void processNormalKeys(unsigned char key, int xx, int yy) {
-    glutSetMenu(mainMenu);
     switch (key) {
     case 27:
         glutDestroyMenu(mainMenu);
         glutDestroyMenu(fillMenu);
         glutDestroyMenu(colorMenu);
-        glutDestroyMenu(shrinkMenu);
+        glutDestroyMenu(fontMenu);
         exit(0);
-        break;
-
-    case 's':
-        if (!menuFlag)
-            glutChangeToSubMenu(2, "Shrink", shrinkMenu);
-        break;
-    case 'c':
-        if (!menuFlag)
-            glutChangeToSubMenu(2, "Color", colorMenu);
         break;
     }
-    if (key == 27)
-        exit(0);
 }
 
 void pressKey(int key, int xx, int yy) {
@@ -242,13 +250,28 @@ void processFillMenu(int option) {
     }
 }
 
-void processShrinkMenu(int option) {
+void processFontMenu(int option) {
     switch (option) {
-    case SHRINK:
-        scale = 0.5f;
+    case INT_GLUT_BITMAP_8_BY_13:
+        font = GLUT_BITMAP_8_BY_13;
         break;
-    case NORMAL:
-        scale = 1.0f;
+    case INT_GLUT_BITMAP_9_BY_15:
+        font = GLUT_BITMAP_9_BY_15;
+        break;
+    case INT_GLUT_BITMAP_TIMES_ROMAN_10:
+        font = GLUT_BITMAP_TIMES_ROMAN_10;
+        break;
+    case INT_GLUT_BITMAP_TIMES_ROMAN_24:
+        font = GLUT_BITMAP_TIMES_ROMAN_24;
+        break;
+    case INT_GLUT_BITMAP_HELVETICA_10:
+        font = GLUT_BITMAP_HELVETICA_10;
+        break;
+    case INT_GLUT_BITMAP_HELVETICA_12:
+        font = GLUT_BITMAP_HELVETICA_12;
+        break;
+    case INT_GLUT_BITMAP_HELVETICA_18:
+        font = GLUT_BITMAP_HELVETICA_18;
         break;
     }
 }
@@ -279,10 +302,15 @@ void processColorMenu(int option) {
 }
 
 void createPopupMenus() {
-    shrinkMenu = glutCreateMenu(processShrinkMenu);
+    fontMenu = glutCreateMenu(processFontMenu);
 
-    glutAddMenuEntry("Shrink", SHRINK);
-    glutAddMenuEntry("NORMAL", NORMAL);
+    glutAddMenuEntry("BITMAP_8_BY_13 ", INT_GLUT_BITMAP_8_BY_13);
+    glutAddMenuEntry("BITMAP_9_BY_15", INT_GLUT_BITMAP_9_BY_15);
+    glutAddMenuEntry("BITMAP_TIMES_ROMAN_10 ", INT_GLUT_BITMAP_TIMES_ROMAN_10);
+    glutAddMenuEntry("BITMAP_TIMES_ROMAN_24", INT_GLUT_BITMAP_TIMES_ROMAN_24);
+    glutAddMenuEntry("BITMAP_HELVETICA_10 ", INT_GLUT_BITMAP_HELVETICA_10);
+    glutAddMenuEntry("BITMAP_HELVETICA_12", INT_GLUT_BITMAP_HELVETICA_12);
+    glutAddMenuEntry("BITMAP_HELVETICA_18", INT_GLUT_BITMAP_HELVETICA_18);
 
     fillMenu = glutCreateMenu(processFillMenu);
 
@@ -299,6 +327,7 @@ void createPopupMenus() {
 
     glutAddSubMenu("Polygon Mode", fillMenu);
     glutAddSubMenu("Color", colorMenu);
+    glutAddSubMenu("Font", fontMenu);
     // attach the menu to the right button
     glutAttachMenu(GLUT_RIGHT_BUTTON);
 

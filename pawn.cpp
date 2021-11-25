@@ -30,6 +30,30 @@ float deltaAngle = 0.0f;
 float deltaMove = 0;
 int xOrigin = -1;
 
+// Constant definitions for Menus
+#define RED 1
+#define GREEN 2
+#define BLUE 3
+#define ORANGE 4
+
+#define FILL 1
+#define LINE 2
+
+#define SHRINK 1
+#define NORMAL 2
+// Pop up menu identifiers
+int fillMenu, shrinkMenu, mainMenu, colorMenu;
+
+// menu status
+int menuFlag = 0;
+
+// frame – the number of frames since we last computed the frame rate
+// time – the current number of milliseconds
+// timebase – the time when we last computed the frame rate
+int frames, times, timebase;
+frame = 0;
+times = timebase = 0;
+
 void Draw();
 void Initialize();
 void ReShape(GLint, GLint);
@@ -39,6 +63,7 @@ void pressKey(int, int, int);
 void releaseKey(int, int, int);
 void mouseButton(int, int, int, int);
 void mouseMove(int, int);
+void createPopupMenus();
 
 int main(int argc, char* argv[]) {
     glutInit(&argc, argv);
@@ -60,6 +85,9 @@ int main(int argc, char* argv[]) {
     glutMouseFunc(mouseButton);
     glutMotionFunc(mouseMove);
     glutMouseWheelFunc(mouseWheel);
+
+    // init Menus
+    createPopupMenus();
 
     glutMainLoop();
     return 0;
@@ -132,6 +160,9 @@ void Draw() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glEnable(GL_DEPTH_TEST);
+    // glEnable(GL_CULL_FACE);
+    // Enable lining
+    // glPolygonMode(GL_FRONT, GL_LINE);
 
     if (deltaMove)
         computePos(deltaMove);
@@ -146,6 +177,15 @@ void Draw() {
     GLfloat qaWhite[] = {1.0, 1.0, 1.0, 1.0};
     GLfloat qaLowAmbient[] = {0.2, 0.2, 0.2, 1.0};
     GLfloat qaFullAmbient[] = {1.0, 1.0, 1.0, 1.0};
+
+    // Calculator frameRate;
+    frame++;
+    times = glutGet(GLUT_ELAPSED_TIME);
+    if (times - timebase > 1000) {
+        sprintf(s, "FPS:%4.2f", frame * 1000.0 / (times - timebase));
+        timebase = times;
+        frame = 0;
+    }
 
     glShadeModel(GL_SMOOTH);
 
@@ -162,6 +202,16 @@ void Draw() {
 
     glPushMatrix();
     gluLookAt(x, 1.0f, z, x + lx, 1.0f, z + lz, 0.0f, 1.0f, 0.0f);
+
+    // Draw ground
+    glColor3f(0.9f, 0.9f, 0.9f);
+    glBegin(GL_QUADS);
+    glVertex3f(-100.0f, 0.0f, -100.0f);
+    glVertex3f(-100.0f, 0.0f, 100.0f);
+    glVertex3f(100.0f, 0.0f, 100.0f);
+    glVertex3f(100.0f, 0.0f, -100.0f);
+    glEnd();
+
     DrawCoordinate();
 
     glutSolidSphere(.5, 20, 20);
@@ -172,7 +222,7 @@ void Draw() {
     glMaterialfv(GL_FRONT, GL_SPECULAR, qaBlack);
     glLightfv(GL_LIGHT0, GL_AMBIENT, qaFullAmbient);
 
-    glFlush();
+    // glFlush();
     glutSwapBuffers();
 }
 
@@ -251,4 +301,45 @@ void mouseMove(int x, int y) {
         lx = sin(angle + deltaAngle);
         lz = -cos(angle + deltaAngle);
     }
+}
+
+void processMenuStatus(int status, int x, int y) {
+    if (status == GLUT_MENU_IN_USE)
+        menuFlag = 1;
+    else
+        menuFlag = 0;
+}
+
+void processFillMenu(int option) {
+    switch (option) {
+    case FILL:
+        glPolygonMode(GL_FRONT, GL_FILL);
+        cout << "Fill" << endl;
+        break;
+    case LINE:
+        cout << "Line" << endl;
+        glPolygonMode(GL_FRONT, GL_LINE);
+        break;
+    }
+}
+
+void processMainMenu(int option) {
+    // nothing to do in here
+    // all actions are for submenus
+}
+
+void createPopupMenus() {
+    fillMenu = glutCreateMenu(processFillMenu);
+
+    glutAddMenuEntry("Fill", FILL);
+    glutAddMenuEntry("Line", LINE);
+
+    mainMenu = glutCreateMenu(processMainMenu);
+
+    glutAddSubMenu("Polygon Mode", fillMenu);
+    // attach the menu to the right button
+    glutAttachMenu(GLUT_RIGHT_BUTTON);
+
+    // this will allow us to know if the menu is active
+    glutMenuStatusFunc(processMenuStatus);
 }
