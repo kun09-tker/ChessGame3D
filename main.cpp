@@ -21,14 +21,17 @@ int x_down, y_down;             // lưu vị trí cờ bị ăn
 Cell MatrixBoard[8][8];
 GLfloat g_board;                // hình dạng bàn cờ
 GLfloat g_chessDown;            // lưu hình dạng con cờ bị ăn
+GLfloat g_box;
+GLuint texture;                        // quản lý texture
+char texture_name[100]={"shinichi.bmp"}; // lưu trữ tên file texture
 
-float eyeX = 12, eyeY = 31, eyeZ = -21;
-float centerX = 12, centerY = 2, centerZ = 7;
+float eyeX = 16, eyeY = 33, eyeZ = -21;
+float centerX = 16, centerY = 2, centerZ = 7;
 bool animationMove = false;     // trạng thái di chuyển cờ
 bool animationDown = false;     // trạng thái cờ bị ăn
 
-vector<GLfloat> MatrixEat_Blue;
-vector<GLfloat> MatrixEat_Yellow;
+vector<GLfloat> MatrixEat_Blue;  // lưu các con cờ xanh bị ăn
+vector<GLfloat> MatrixEat_Yellow; // lưu các con cờ vàng bị ăn
 
 void ReShape(int width, int height) {
     glViewport(0, 0, width, height);
@@ -41,43 +44,53 @@ void ReShape(int width, int height) {
 }
 
 
+
 // mỗi lần đi là cell width = 3
 void RenderScene() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
     gluLookAt(eyeX, eyeY, eyeZ,centerX, centerY ,centerZ,0.0,1.0, 0.0);
     glPushMatrix();
-    //DrawCoordinate();
+    DrawCoordinate();
     glTranslatef(0,-1,0); // để cho bằng với mp Oxz 
     glCallList(g_board);
-    glTranslatef(1.5,1.5,1.5); // để cho con cờ nằm vừa trong ô 
+    glTranslatef(2,2,2); // để cho con cờ nằm vừa trong ô 
     if(player=="BULE"){
         drawTextColor("Player01",0,10,8,0,1,1,1);
-        drawTextColor("Player02",24,10,8,0.6,0.6,0.6,1);
+        drawTextColor("Player02",30,10,8,0.6,0.6,0.6,1);
     }
     else{
         drawTextColor("Player01",0,10,8,0.6,0.6,0.6,1);
-        drawTextColor("Player02",24,10,8,1,1,0,1);
+        drawTextColor("Player02",30,10,8,1,1,0,1);
     }
+    glTranslatef(10.5,12,8);
+    glCallList(Notification_view());
+    glTranslatef(-10.5,-12,-8);
+
+    glTranslatef(10.5,20,8);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glCallList(g_box);
+    glTranslatef(-10.5,-20,-8);
+
     if(animationMove){
         for (int i = 0; i < 8; i++){
             for (int j = 0; j < 8; j++){
                 Cell Local = MatrixBoard[i][j];
                 if(i!=x_old || j!=y_old){
                     if(Local.name != "empty"){
-                        glTranslatef(i*3,0,j*3);
+                        glTranslatef(i*4,0,j*4);
                         glCallList(MatrixBoard[i][j].shape);
-                        glTranslatef(-i*3,0,-j*3);
+                        glTranslatef(-i*4,0,-j*4);
                     }
                     if(Local.choose || Local.move){
-                        glTranslatef(i*3-1.5,-1.49,j*3-1.5);
+                        glTranslatef(i*4-2,-1.49,j*4-2);
                         glCallList(StatusCell_view("green"));
-                        glTranslatef(-i*3+1.5,1.49,-j*3+1.5);
+                        glTranslatef(-i*4+2,1.49,-j*4+2);
                     }
                     if(Local.target){
-                        glTranslatef(i*3-1.5,-1.49,j*3-1.5);
+                        glTranslatef(i*4-2,-1.49,j*4-2);
                         glCallList(StatusCell_view("red"));
-                        glTranslatef(-i*3+1.5,1.49,-j*3+1.5);
+                        glTranslatef(-i*4+2,1.49,-j*4+2);
                     }
                 }
 
@@ -85,41 +98,40 @@ void RenderScene() {
         }
         if(animationDown){
             //cout << x_old << " " << y_old << endl;
-            glTranslatef(x_old_copy*3,0,y_old_copy*3);
+            glTranslatef(x_old_copy*4,0,y_old_copy*4);
             glCallList(MatrixBoard[x][y].shape);
-            glTranslatef(-x_old_copy*3,0,-y_old_copy*3);
+            glTranslatef(-x_old_copy*4,0,-y_old_copy*4);
 
-            glTranslatef(x_down*3,-down,y_down*3);
+            glTranslatef(x_down*4,-down,y_down*4);
             glCallList(g_chessDown);
-            glTranslatef(-x_down*3,down,-y_down*3); 
+            glTranslatef(-x_down*4,down,-y_down*4); 
         }
         else{
-            glTranslatef((x+dx)*3,0,(y+dy)*3);
+            glTranslatef((x+dx)*4,0,(y+dy)*4);
             glCallList(MatrixBoard[x][y].shape);
-            glTranslatef(-(x+dx)*3,0,-(y+dy)*3);
+            glTranslatef(-(x+dx)*4,0,-(y+dy)*4);
         }
 
     }
 
-    else{
+    else{  
         for (int i = 0; i < 8; i++){
             for (int j = 0; j < 8; j++){
-                glPushName(i*8+j);
                 Cell Local = MatrixBoard[i][j];
                 if(Local.name != "empty"){
-                    glTranslatef(i*3,0,j*3);
+                    glTranslatef(i*4,0,j*4);
                     glCallList(MatrixBoard[i][j].shape);
-                    glTranslatef(-i*3,0,-j*3);
+                    glTranslatef(-i*4,0,-j*4);
                 }
                 if(Local.choose || Local.move){
-                    glTranslatef(i*3-1.5,-1.49,j*3-1.5);
+                    glTranslatef(i*4-2,-1.99,j*4-2);
                     glCallList(StatusCell_view("green"));
-                    glTranslatef(-i*3+1.5,1.49,-j*3+1.5);
+                    glTranslatef(-i*4+2,1.99,-j*4+2);
                 }
                 if(Local.target){
-                    glTranslatef(i*3-1.5,-1.49,j*3-1.5);
+                    glTranslatef(i*4-2,-1.99,j*4-2);
                     glCallList(StatusCell_view("red"));
-                    glTranslatef(-i*3+1.5,1.49,-j*3+1.5);
+                    glTranslatef(-i*4+2,1.99,-j*4+2);
                 }
 
             }
@@ -128,20 +140,28 @@ void RenderScene() {
             int pos_x = (i < 8) ? -1 : -2;
             int pos_y = i%8;
 
-            glTranslatef(pos_x*3-1.5,-1.5,pos_y*3-1.5);
+            glTranslatef(pos_x*4-2,-2,pos_y*4-2);
             glCallList(MatrixEat_Yellow[i]);
-            glTranslatef(-pos_x*3+1.5,1.5,-pos_y*3+1.5);
+            glTranslatef(-pos_x*4+2,2,-pos_y*4+2);
         }
 
         for(int i=0; i<MatrixEat_Blue.size(); i++){
             int pos_x = (i < 8) ? 9 : 10;
             int pos_y = i%8;
 
-            glTranslatef(pos_x*3-1.5,-1.5,pos_y*3-1.5);
+            glTranslatef(pos_x*4-2,-2,pos_y*4-2);
             glCallList(MatrixEat_Blue[i]);
-            glTranslatef(-pos_x*3+1.5,1.5,-pos_y*3+1.5);
+            glTranslatef(-pos_x*4+2,2,-pos_y*4+2);
         }
     }
+
+    // cout << eyeX << endl;
+    // cout << eyeY << endl;
+    // cout << eyeZ << endl;
+    // cout << centerX << endl;
+    // cout << centerY << endl;
+    // cout << centerZ << endl;
+    // cout << endl << endl;
 
     glPopMatrix();
     glutSwapBuffers();
@@ -173,7 +193,7 @@ void processInput(int x, int y){
     if(ruleCheckBoundary(x,y)){
         if(x_old!=-1 && y_old!=-1) MatrixBoard[x_old][y_old].choose = false;
         MatrixBoard[x][y].choose = true;                              // chọn cờ
-        if((MatrixBoard[x][y].move || MatrixBoard[x][y].target)){       // di chuyển cờ và ăn cờ đối phương
+        if((MatrixBoard[x][y].move || MatrixBoard[x][y].target)){     // di chuyển cờ và ăn cờ đối phương
             
             x_down = x;
             y_down = y;
@@ -273,9 +293,57 @@ void tasten(unsigned char key, int xmouse, int ymouse)
 }
 
 
+glutRGBImageRec *LoadBMP(char *Filename)
+{
+  FILE *File = NULL;
+ 
+  if (!Filename)
+    return NULL;
+  fopen_s(&File, Filename, "r");
+  if (File)
+  {
+    fclose(File);
+    return glutDIBImageLoadA((LPCSTR)Filename);
+  }
+  return NULL;
+}
+ 
+bool LoadGLTextures()
+{
+ int ret = false;
+ glutRGBImageRec *texture_image =NULL;
+ 
+ if (texture_image = LoadBMP(texture_name))
+ {
+  glGenTextures(1, &texture);  // Bắt đầu quá trình gen texture.
+  glBindTexture(GL_TEXTURE_2D, texture);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+ 
+  //map dữ liệu bit map vào texture.
+  glTexImage2D(GL_TEXTURE_2D, 0, 3, texture_image->sizeX,
+               texture_image->sizeY, 0, GL_RGB,
+               GL_UNSIGNED_BYTE, texture_image->data);
+ }
+ else
+ {
+   ret = false;
+   if (texture_image)
+  {
+    if (texture_image->data)
+    free(texture_image->data);
+    free(texture_image);
+  }
+ }
+ return ret;
+}
+
 void Init() {
     glClearColor(0.0, 0.0, 0.0, 0.0);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_TEXTURE_2D);
+
+    LoadGLTextures();
     // Lighting set up
     glLightModeli (GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
     glEnable (GL_LIGHTING);
@@ -325,7 +393,8 @@ void Init() {
         MatrixBoard[7][7-i] = Cell(listName[tmp]+"Y",listShape[tmp+6]);     // Xây hàng xe, ngựa, ... vàng
         MatrixBoard[6][7-i] = Cell(listName[5]+"Y",listShape[11]);           // Xây hàng tốt vàng
     }
-    g_board = Board_view(3,1);
+    g_board = Board_view(4,1);
+    g_box = MakeCube(3);
 }
 
 

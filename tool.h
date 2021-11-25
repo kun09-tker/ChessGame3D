@@ -61,3 +61,4 @@ void drawTextColor(const char* text,float x, float y,float z, float r, float g, 
 	renderBitMap(x, y,z, GLUT_BITMAP_TIMES_ROMAN_24, buf, xScale, yScale, zScale);
     SetLightColor(0,0,0,1);
 }
+
