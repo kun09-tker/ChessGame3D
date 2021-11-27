@@ -36,19 +36,21 @@ void ruleSwapChess(Cell Board[8][8], vector<GLfloat> &Eat_bule, vector<GLfloat> 
     char player = Board[xcurrent][ycurrent].name[1];
     if(player=='Y') tmp = -1;
 
-    if(ruleCheckBoundary(xmove-tmp,ymove)){
+    if(ruleCheckBoundary(xmove-tmp,ymove) && ruleCheckBoundary(xmove,ymove)){
                 
         if(Board[xmove-tmp][ymove].name[0]=='P' 
         && Board[xmove-tmp][ymove].name[1]!=player 
-        && Board[xmove-tmp][ymove].name!="empty"){   // kiểm tra phía sau cóc tốt đối thủ hay không, có thì ăn
+        && Board[xmove-tmp][ymove].name!="empty"
+        && Board[xmove][ymove].name=="empty"){   // kiểm tra phía sau con tốt đối thủ hay không, có thì ăn
             
             shape = Board[xmove-tmp][ymove].shape;
             x_down = xmove-tmp;
             y_down = ymove;
 
+            if(Board[x_down][y_down].name[1] == 'B') Eat_bule.push_back(shape);
+            else if (Board[x_down][y_down].name[1] == 'Y') Eat_yellow.push_back(shape);
+
             Board[xmove-tmp][ymove] = Cell();
-            if(Board[x_down][y_down].name[1] == 'B') Eat_bule.push_back(Board[x_down][y_down].shape);
-            else if (Board[x_down][y_down].name[1] == 'Y') Eat_yellow.push_back(Board[x_down][y_down].shape);
         }
     }
 
@@ -189,8 +191,14 @@ void ruleDirection(Cell Board[8][8] ,int xlocal, int ylocal){
     }
     else if(name_chess=='P'){
         if(xlocal==1 || xlocal==6){ // tốt vị trí ban đầu được đi 1 - 2 ô 
-            if(ruleCheckBoundary(xlocal+tmp,ylocal)  && Board[xlocal+tmp][ylocal].name == "empty") Board[xlocal+tmp][ylocal].move = true;
-            if(ruleCheckBoundary(xlocal+2*tmp,ylocal)  && Board[xlocal+tmp][ylocal].name == "empty") Board[xlocal+2*tmp][ylocal].move = true;
+            for(int i=1; i<3 ;i++){
+                if(ruleCheckBoundary(xlocal+i*tmp,ylocal)){
+                    if(Board[xlocal+i*tmp][ylocal].name == "empty"){
+                        Board[xlocal+i*tmp][ylocal].move = true;
+                    }
+                    else break;
+                }
+            }
         }
         if(ruleCheckBoundary(xlocal+tmp,ylocal+tmp)){
             if(Board[xlocal+tmp][ylocal+tmp].name[1]!=player && Board[xlocal+tmp][ylocal+tmp].name!="empty"){   // kiểm tra có phải gặp đối thử hay không
@@ -216,6 +224,8 @@ void ruleDirection(Cell Board[8][8] ,int xlocal, int ylocal){
                 }
             }
         }
+
+        // Phong cấp bậc cho tốt
 
     }
 

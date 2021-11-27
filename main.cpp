@@ -1,158 +1,151 @@
-#include<iostream>
-#include <GL/gl.h>
+#include <GL/glew.h>
+#include <GL/freeglut.h>
 #include <GL/glu.h>
 #include <GL/glut.h>
-#include <GL/freeglut.h>
 #include <math.h>
+#include <iostream>
 #include <vector>
-#include "view.h"
 #include "rule.h"
+#include "view.h"
 
 using namespace std;
 
-string player = "BULE";         // đội xanh đi đầu tiên
-int x,y;                        // tọa độ ô cờ
-float dx=-1,dy=-1;              // khoảng cách hai ô
-float xtmp = 1, ytmp = 1;       // dấu của khoảng cách 1 là dương, -1 là âm
+string player = "BULE";    // đội xanh đi đầu tiên
+int x = 0, y = 0;          // tọa độ ô cờ chọn
+int xmove = 0, ymove = 0;  // tọa độ di chuyển
+float dx = -1, dy = -1;    // khoảng cách hai ô
+float xtmp = 1, ytmp = 1;  // dấu của khoảng cách 1 là dương, -1 là âm
 float down = 0;
-int x_old = -1, y_old = -1;     // lưu vị trí cũ xử lý trong process input
-int x_old_copy, y_old_copy;     // lưu vị trí cũ sử dụng ngoài process input 
-int x_down, y_down;             // lưu vị trí cờ bị ăn
+int x_old = -1, y_old = -1;  // lưu vị trí cũ xử lý trong process input
+int x_old_copy, y_old_copy;  // lưu vị trí cũ sử dụng ngoài process input
+int x_down, y_down;          // lưu vị trí cờ bị ăn
 Cell MatrixBoard[8][8];
-GLfloat g_board;                // hình dạng bàn cờ
-GLfloat g_chessDown;            // lưu hình dạng con cờ bị ăn
+GLfloat g_board;      // hình dạng bàn cờ
+GLfloat g_chessDown;  // lưu hình dạng con cờ bị ăn
+GLfloat g_chessWait;
 GLfloat g_box;
-GLuint texture;                        // quản lý texture
-char texture_name[100]={"shinichi.bmp"}; // lưu trữ tên file texture
+GLuint texture;                                 // quản lý texture
+char texture_name[100] = {"./shinichi.bmp"};  // lưu trữ tên file texture
+char texture_name_clear[100] = {"./clear.bmp"};
 
 float eyeX = 16, eyeY = 33, eyeZ = -21;
 float centerX = 16, centerY = 2, centerZ = 7;
-bool animationMove = false;     // trạng thái di chuyển cờ
-bool animationDown = false;     // trạng thái cờ bị ăn
+bool animationMove = false;  // trạng thái di chuyển cờ
+bool animationDown = false;  // trạng thái cờ bị ăn
+bool promotion = false;
 
-vector<GLfloat> MatrixEat_Blue;  // lưu các con cờ xanh bị ăn
-vector<GLfloat> MatrixEat_Yellow; // lưu các con cờ vàng bị ăn
+vector<GLfloat> MatrixEat_Blue;    // lưu các con cờ xanh bị ăn
+vector<GLfloat> MatrixEat_Yellow;  // lưu các con cờ vàng bị ăn
 
 void ReShape(int width, int height) {
     glViewport(0, 0, width, height);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     float ratio = (float)width / (float)height;
-    //glOrtho(-10.0, 10.0, -10.0, 10.0, 10.0, -10.0);
+    // glOrtho(-10.0, 10.0, -10.0, 10.0, 10.0, -10.0);
     gluPerspective(45.0, ratio, 1, 100.0);
     glMatrixMode(GL_MODELVIEW);
 }
-
-
 
 // mỗi lần đi là cell width = 3
 void RenderScene() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-    gluLookAt(eyeX, eyeY, eyeZ,centerX, centerY ,centerZ,0.0,1.0, 0.0);
+    gluLookAt(eyeX, eyeY, eyeZ, centerX, centerY, centerZ, 0.0, 1.0, 0.0);
     glPushMatrix();
     DrawCoordinate();
-    glTranslatef(0,-1,0); // để cho bằng với mp Oxz 
+    glTranslatef(0, -1, 0);  // để cho bằng với mp Oxz
     glCallList(g_board);
-    glTranslatef(2,2,2); // để cho con cờ nằm vừa trong ô 
-    if(player=="BULE"){
-        drawTextColor("Player01",0,10,8,0,1,1,1);
-        drawTextColor("Player02",30,10,8,0.6,0.6,0.6,1);
+    glTranslatef(2, 1.5, 2);  // để cho con cờ nằm vừa trong ô
+    if (player == "BULE") {
+        drawTextColor("Player01", 0, 10, 8, 0, 1, 1, 1);
+        drawTextColor("Player02", 30, 10, 8, 0.6, 0.6, 0.6, 1);
+    } else {
+        drawTextColor("Player01", 0, 10, 8, 0.6, 0.6, 0.6, 1);
+        drawTextColor("Player02", 30, 10, 8, 1, 1, 0, 1);
     }
-    else{
-        drawTextColor("Player01",0,10,8,0.6,0.6,0.6,1);
-        drawTextColor("Player02",30,10,8,1,1,0,1);
-    }
-    glTranslatef(10.5,12,8);
+    glTranslatef(10.5, 12, 8);
     glCallList(Notification_view());
-    glTranslatef(-10.5,-12,-8);
+    //glCallList(Test());
+    glTranslatef(-10.5, -12, -8);
 
-    glTranslatef(10.5,20,8);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glCallList(g_box);
-    glTranslatef(-10.5,-20,-8);
+    // glTranslatef(10.5, 20, 8);
+    // glCallList(g_box);
+    // glTranslatef(-10.5, -20, -8);
 
-    if(animationMove){
-        for (int i = 0; i < 8; i++){
-            for (int j = 0; j < 8; j++){
+
+    if (animationMove) {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
                 Cell Local = MatrixBoard[i][j];
-                if(i!=x_old || j!=y_old){
-                    if(Local.name != "empty"){
-                        glTranslatef(i*4,0,j*4);
+                if (i != x_old || j != y_old) {
+                    if (Local.name != "empty") {
+                        glTranslatef(i * 4, 0, j * 4);
                         glCallList(MatrixBoard[i][j].shape);
-                        glTranslatef(-i*4,0,-j*4);
-                    }
-                    if(Local.choose || Local.move){
-                        glTranslatef(i*4-2,-1.49,j*4-2);
-                        glCallList(StatusCell_view("green"));
-                        glTranslatef(-i*4+2,1.49,-j*4+2);
-                    }
-                    if(Local.target){
-                        glTranslatef(i*4-2,-1.49,j*4-2);
-                        glCallList(StatusCell_view("red"));
-                        glTranslatef(-i*4+2,1.49,-j*4+2);
+                        glTranslatef(-i * 4, 0, -j * 4);
                     }
                 }
-
             }
         }
-        if(animationDown){
-            //cout << x_old << " " << y_old << endl;
-            glTranslatef(x_old_copy*4,0,y_old_copy*4);
-            glCallList(MatrixBoard[x][y].shape);
-            glTranslatef(-x_old_copy*4,0,-y_old_copy*4);
+        if (animationDown) {
+            // cout << x_old << " " << y_old << endl;
+            glTranslatef(x_old_copy * 4, 0, y_old_copy * 4);
+            glCallList(g_chessWait);
+            glTranslatef(-x_old_copy * 4, 0, -y_old_copy * 4);
 
-            glTranslatef(x_down*4,-down,y_down*4);
+            glTranslatef(x_down * 4, -down, y_down * 4);
             glCallList(g_chessDown);
-            glTranslatef(-x_down*4,down,-y_down*4); 
-        }
-        else{
-            glTranslatef((x+dx)*4,0,(y+dy)*4);
+            glTranslatef(-x_down * 4, down, -y_down * 4);
+        } else {
+            glTranslatef((x + dx) * 4, 0, (y + dy) * 4);
             glCallList(MatrixBoard[x][y].shape);
-            glTranslatef(-(x+dx)*4,0,-(y+dy)*4);
+            glTranslatef(-(x + dx) * 4, 0, -(y + dy) * 4);
         }
 
     }
 
-    else{  
-        for (int i = 0; i < 8; i++){
-            for (int j = 0; j < 8; j++){
+    else {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
                 Cell Local = MatrixBoard[i][j];
-                if(Local.name != "empty"){
-                    glTranslatef(i*4,0,j*4);
+                if (Local.name != "empty") {
+                    glTranslatef(i * 4, 0, j * 4);
                     glCallList(MatrixBoard[i][j].shape);
-                    glTranslatef(-i*4,0,-j*4);
+                    glTranslatef(-i * 4, 0, -j * 4);
                 }
-                if(Local.choose || Local.move){
-                    glTranslatef(i*4-2,-1.99,j*4-2);
+                if (Local.choose || Local.move) {
+                    glTranslatef(i * 4 - 2, -1.49, j * 4 - 2);
                     glCallList(StatusCell_view("green"));
-                    glTranslatef(-i*4+2,1.99,-j*4+2);
+                    glTranslatef(-i * 4 + 2, 1.49, -j * 4 + 2);
                 }
-                if(Local.target){
-                    glTranslatef(i*4-2,-1.99,j*4-2);
+                if (Local.target) {
+                    glTranslatef(i * 4 - 2, -1.49, j * 4 - 2);
                     glCallList(StatusCell_view("red"));
-                    glTranslatef(-i*4+2,1.99,-j*4+2);
+                    glTranslatef(-i * 4 + 2, 1.49, -j * 4 + 2);
                 }
-
             }
         }
-        for(int i=0; i<MatrixEat_Yellow.size(); i++){
-            int pos_x = (i < 8) ? -1 : -2;
-            int pos_y = i%8;
+        glTranslatef(xmove*4 - 2, -1.48, ymove*4 - 2);
+        glCallList(StatusCell_view(player));
+        glTranslatef(-xmove*4 + 2, 1.48, -ymove*4 + 2);
+    }
 
-            glTranslatef(pos_x*4-2,-2,pos_y*4-2);
-            glCallList(MatrixEat_Yellow[i]);
-            glTranslatef(-pos_x*4+2,2,-pos_y*4+2);
-        }
+    for (int i = 0; i < MatrixEat_Yellow.size(); i++) {
+        int pos_x = (i < 8) ? -1 : -2;
+        int pos_y = i % 8;
 
-        for(int i=0; i<MatrixEat_Blue.size(); i++){
-            int pos_x = (i < 8) ? 9 : 10;
-            int pos_y = i%8;
+        glTranslatef(pos_x * 4, -1.5, pos_y * 4);
+        glCallList(MatrixEat_Yellow[i]);
+        glTranslatef(-pos_x * 4, 1.5, -pos_y * 4);
+    }
 
-            glTranslatef(pos_x*4-2,-2,pos_y*4-2);
-            glCallList(MatrixEat_Blue[i]);
-            glTranslatef(-pos_x*4+2,2,-pos_y*4+2);
-        }
+    for (int i = 0; i < MatrixEat_Blue.size(); i++) {
+        int pos_x = (i < 8) ? 8 : 9;
+        int pos_y = i % 8;
+
+        glTranslatef(pos_x * 4, -1.5, pos_y * 4);
+        glCallList(MatrixEat_Blue[i]);
+        glTranslatef(-pos_x * 4, 1.5, -pos_y * 4);
     }
 
     // cout << eyeX << endl;
@@ -168,63 +161,113 @@ void RenderScene() {
     glFlush();
 }
 
-void timer(int){
-    if(animationMove){
+
+void timer(int) {
+    if (animationMove) {
         glutPostRedisplay();
-        glutTimerFunc(5,timer,0);
-        if(animationDown){
-            down = down + 0.01; 
-            if(int(down)==5){
+        glutTimerFunc(5, timer, 0);
+        if (animationDown) {
+            down = down + 0.01;
+            if (int(down) == 5) {
                 animationDown = false;
                 down = 0;
             }
-        }
-        else{
-            dx = (int(dx*100)==0) ? 0 : dx = dx - (0.01*xtmp); 
-            dy = (int(dy*100)==0) ? 0 : dy = dy - (0.01*ytmp);
-            if(int(dx*100)==0 && int(dy*100)==0){
+        } else {
+            dx = (int(dx * 100) == 0) ? 0 : dx = dx - (0.01 * xtmp);
+            dy = (int(dy * 100) == 0) ? 0 : dy = dy - (0.01 * ytmp);
+            if (int(dx * 100) == 0 && int(dy * 100) == 0) {
                 animationMove = false;
             }
         }
     }
 }
 
-void processInput(int x, int y){
-    if(ruleCheckBoundary(x,y)){
-        if(x_old!=-1 && y_old!=-1) MatrixBoard[x_old][y_old].choose = false;
-        MatrixBoard[x][y].choose = true;                              // chọn cờ
-        if((MatrixBoard[x][y].move || MatrixBoard[x][y].target)){     // di chuyển cờ và ăn cờ đối phương
-            
+void menuPromotion(int id){
+    animationMove = true;
+    animationDown = true;
+    promotion = false;
+    x_down = x;
+    y_down = y;
+    g_chessDown = MatrixBoard[x_down][y_down].shape;
+    g_chessWait = 0;
+    glutTimerFunc(0,timer,0);
+    string P(1,player[0]);
+
+    if(id == 1){
+        MatrixBoard[x][y] = Cell("Q"+ P,Rook_view(player[0]));
+    }
+    else if(id == 2){
+        MatrixBoard[x][y] = Cell("B"+ P,Rook_view(player[0]));
+    }
+    else if(id == 3){
+        MatrixBoard[x][y] = Cell("N"+ P,Rook_view(player[0]));
+    }
+    else{
+        MatrixBoard[x][y] = Cell("R"+ P,Rook_view(player[0]));
+    }
+
+    player = ruleSwapPlayer(player);
+    glutDestroyMenu(glutGetMenu());
+    glutPostRedisplay();
+}
+
+void processInput(int x, int y) {
+    if (ruleCheckBoundary(x, y)) {
+        g_chessWait = MatrixBoard[x_old][y_old].shape;
+        if (x_old != -1 && y_old != -1)
+            MatrixBoard[x_old][y_old].choose = false;
+        MatrixBoard[x][y].choose = true;  // chọn cờ
+        if ((MatrixBoard[x][y].move ||
+             MatrixBoard[x][y].target)) {  // di chuyển cờ và ăn cờ đối phương
+
             x_down = x;
             y_down = y;
 
-            if(MatrixBoard[x][y].target){
+            if (MatrixBoard[x][y].target) {
                 animationDown = true;
                 g_chessDown = MatrixBoard[x][y].shape;
-                x_old_copy = x_old; y_old_copy = y_old; 
+                x_old_copy = x_old;
+                y_old_copy = y_old;
             }
 
             dx = float(x_old - x);
             dy = float(y_old - y);
-            xtmp = (dx>0) ? 1 : -1;
-            ytmp = (dy>0) ? 1 : -1;  
+            xtmp = (dx > 0) ? 1 : -1;
+            ytmp = (dy > 0) ? 1 : -1;
             animationMove = true;
-
-            ruleSwapChess(MatrixBoard,MatrixEat_Blue,MatrixEat_Yellow,x_old,y_old,x,y,x_down,y_down,g_chessDown);
-
-            glutTimerFunc(0,timer,0);                           
             
-            if(MatrixBoard[x][y].name[1]!=player[0]) ruleDirection(MatrixBoard,x,y);
+            ruleSwapChess(MatrixBoard, MatrixEat_Blue, MatrixEat_Yellow, x_old, y_old, x, y, x_down,
+                          y_down, g_chessDown);
+
+            if (MatrixBoard[x][y].name[1] != player[0])
+                ruleDirection(MatrixBoard, x, y);
+            if(MatrixBoard[x][y].name[0] && (x==0 || x==7)){ // tốt vị trí cuối ở đối thủ
+                if(ruleCheckBoundary(x,y)){
+                    promotion = true;
+                }
+            }
+
             MatrixBoard[x_old][y_old].choose = false;
             MatrixBoard[x][y].choose = true;
-            player = ruleSwapPlayer(player);
+
+            if(promotion){
+                glutCreateMenu(menuPromotion);
+                glutAddMenuEntry("Queen",1);
+                glutAddMenuEntry("Bishop",2);
+                glutAddMenuEntry("Knight",3);
+                glutAddMenuEntry("Rook",4);
+                glutAttachMenu(GLUT_LEFT_BUTTON);
+            }
+            else{
+                player = ruleSwapPlayer(player);
+            }
 
         }
-        else if(!MatrixBoard[x][y].move && MatrixBoard[x][y].name[1]==player[0]){       // xác định hướng đi của cờ
+        else if (!MatrixBoard[x][y].move && MatrixBoard[x][y].name[1] == player[0]) {  // xác định hướng đi của cờ
             ruleClear(MatrixBoard);
-            ruleDirection(MatrixBoard,x,y);
+            ruleDirection(MatrixBoard, x, y);
         }
-        else if(!MatrixBoard[x][y].move){
+        else if (!MatrixBoard[x][y].move){
             ruleClear(MatrixBoard);
         }
         // for (int i = 0; i < 8; i++){
@@ -233,122 +276,46 @@ void processInput(int x, int y){
         //     }
         //     cout << endl;
         // }
+        glutTimerFunc(0, timer, 0);
     }
-    x_old = x; y_old = y;
+    
+
+    x_old = x;
+    y_old = y;
     glutPostRedisplay();
 }
 
-int dem = 0; 
+int dem = 0;
 
-void tasten(unsigned char key, int xmouse, int ymouse)
-{	
-    if(dem == 0){
-        x = key - '0';
-        dem++;
-        cout << "x = " << x << endl;
+void tasten(unsigned char key, int xmouse, int ymouse) {
+    if (key == 'a') {
+        xmove += 1;
+    } else if (key == 'd') {
+        xmove -= 1;
+    } else if (key == 'w') {
+        ymove += 1;
+    } else if (key == 's') {
+        ymove -= 1;
     }
-    else if(dem == 1){
-        y = key - '0';
-        cout << "y = " << y << endl;
-        processInput(x,y);
-        dem = 0;
-    }
-    if(key == 'a'){
-        eyeX += 1;
-    }
-    else if (key == 'd'){
-        eyeX -= 1;
-    }
-    else if(key == 'w'){
-        eyeY += 1;
-    }
-    else if (key == 's'){
-        eyeY -= 1;
-    }
-    else if(key == 'q'){
-        eyeZ += 1;
-    }
-    else if (key == 'e'){
-        eyeZ -= 1;
-    }
-    else if(key == 'j'){
-        centerX += 1;
-    }
-    else if (key == 'l'){
-        centerX -= 1;
-    }
-    else if(key == 'i'){
-        centerY += 1;
-    }
-    else if (key == 'k'){
-        centerY -= 1;
-    }
-    else if(key == 'u'){
-        centerZ += 1;
-    }
-    else if (key == 'o'){
-        centerZ -= 1;
+    
+    if(int(key) == 13){
+        x = xmove;
+        y = ymove;
+        processInput(x, y);
     }
     glutPostRedisplay();
 }
 
-
-glutRGBImageRec *LoadBMP(char *Filename)
-{
-  FILE *File = NULL;
- 
-  if (!Filename)
-    return NULL;
-  fopen_s(&File, Filename, "r");
-  if (File)
-  {
-    fclose(File);
-    return glutDIBImageLoadA((LPCSTR)Filename);
-  }
-  return NULL;
-}
- 
-bool LoadGLTextures()
-{
- int ret = false;
- glutRGBImageRec *texture_image =NULL;
- 
- if (texture_image = LoadBMP(texture_name))
- {
-  glGenTextures(1, &texture);  // Bắt đầu quá trình gen texture.
-  glBindTexture(GL_TEXTURE_2D, texture);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
- 
-  //map dữ liệu bit map vào texture.
-  glTexImage2D(GL_TEXTURE_2D, 0, 3, texture_image->sizeX,
-               texture_image->sizeY, 0, GL_RGB,
-               GL_UNSIGNED_BYTE, texture_image->data);
- }
- else
- {
-   ret = false;
-   if (texture_image)
-  {
-    if (texture_image->data)
-    free(texture_image->data);
-    free(texture_image);
-  }
- }
- return ret;
-}
 
 void Init() {
     glClearColor(0.0, 0.0, 0.0, 0.0);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_TEXTURE_2D);
 
-    LoadGLTextures();
     // Lighting set up
-    glLightModeli (GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
-    glEnable (GL_LIGHTING);
-    glEnable (GL_LIGHT0);
-
+    glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
 
     // GLfloat light_pos[] = {0.0, 0.25, 1.0, 0.0};
     // glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
@@ -366,40 +333,42 @@ void Init() {
     glMateriali(GL_FRONT, GL_SHININESS, shininess);
 
     glEnable(GL_BLEND);
-    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    
-    string listName[6] = {
-        "R","N","B","Q","K","P"
-    };
-    
-    //K : Vua
-    //Q : Hậu
-    //R : Xe
-    //B : Tượng
-    //N : Mã
-    //P : Tốt
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    //KB : Vua bên xanh dương
+    string listName[6] = {"R", "N", "B", "Q", "K", "P"};
 
-    GLfloat listShape[12] = {
-        Rook_view("blue"), Knight_view("blue"),Rook_view("blue"),Rook_view("blue"),Rook_view("blue"),Knight_view("blue"),
-        Rook_view("yellow"), Knight_view("yellow"),Rook_view("yellow"),Rook_view("yellow"),Rook_view("yellow"),Knight_view("yellow")
-    };
+    // K : Vua
+    // Q : Hậu
+    // R : Xe
+    // B : Tượng
+    // N : Mã
+    // P : Tốt
 
-    for (int i = 0; i < 8; i++){
-        int tmp = i < 5 ? i : i - 3 - i%5 * 2;
-        MatrixBoard[0][i] = Cell(listName[tmp]+"B",listShape[tmp]);      // Xây hàng xe, ngựa, ... xanh dương
-        MatrixBoard[1][i] = Cell(listName[5]+"B",listShape[5]);            // Xây hàng tốt xanh dương
-        MatrixBoard[7][7-i] = Cell(listName[tmp]+"Y",listShape[tmp+6]);     // Xây hàng xe, ngựa, ... vàng
-        MatrixBoard[6][7-i] = Cell(listName[5]+"Y",listShape[11]);           // Xây hàng tốt vàng
+    // KB : Vua bên xanh dương
+
+    GLfloat listShape[12] = {Rook_view('B'),   Knight_view('B'),   Rook_view('B'),
+                             Rook_view('B'),   Rook_view('B'),     Knight_view('B'),
+                             Rook_view('Y'), Knight_view('Y'), Rook_view('Y'),
+                             Rook_view('Y'), Rook_view('Y'),   Knight_view('Y')};
+
+    MatrixEat_Blue.push_back(listShape[0]);
+    MatrixEat_Yellow.push_back(listShape[8]);
+    for (int i = 0; i < 8; i++) {
+        int tmp = i < 5 ? i : i - 3 - i % 5 * 2;
+        MatrixBoard[0][i] =
+            Cell(listName[tmp] + "B", listShape[tmp]);  // Xây hàng xe, ngựa, ... xanh dương
+        MatrixBoard[1][i] = Cell(listName[5] + "B", listShape[5]);  // Xây hàng tốt xanh dương
+        MatrixBoard[7][7 - i] =
+            Cell(listName[tmp] + "Y", listShape[tmp + 6]);  // Xây hàng xe, ngựa, ... vàng
+        MatrixBoard[6][7 - i] = Cell(listName[5] + "Y", listShape[11]);  // Xây hàng tốt vàng
     }
-    g_board = Board_view(4,1);
+    g_board = Board_view(4, 1);
     g_box = MakeCube(3);
+   // texture =  loadBMP_custom(texture_name);
 }
 
-
-int main(int argc, char* argv[]) {
-    while(true){
+int main(int argc, char *argv[]) {
+    while (true) {
         glutInit(&argc, argv);
         glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
         glutInitWindowSize(1000, 1000);
@@ -413,9 +382,3 @@ int main(int argc, char* argv[]) {
     }
     return 0;
 }
-
-
-
-
-
-
