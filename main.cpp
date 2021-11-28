@@ -3,6 +3,7 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 #include <math.h>
+#include <map>
 #include <iostream>
 #include <vector>
 #include "rule.h"
@@ -11,28 +12,38 @@
 using namespace std;
 
 string player = "BULE";    // đội xanh đi đầu tiên
+
 int x = 0, y = 0;          // tọa độ ô cờ chọn
 int xmove = 0, ymove = 0;  // tọa độ di chuyển
-float dx = -1, dy = -1;    // khoảng cách hai ô
-float xtmp = 1, ytmp = 1;  // dấu của khoảng cách 1 là dương, -1 là âm
-float down = 0;
 int x_old = -1, y_old = -1;  // lưu vị trí cũ xử lý trong process input
 int x_old_copy, y_old_copy;  // lưu vị trí cũ sử dụng ngoài process input
 int x_down, y_down;          // lưu vị trí cờ bị ăn
+
 Cell MatrixBoard[8][8];
+
 GLfloat g_board;      // hình dạng bàn cờ
 GLfloat g_chessDown;  // lưu hình dạng con cờ bị ăn
 GLfloat g_chessWait;
 GLfloat g_box;
+
 GLuint texture;                                 // quản lý texture
+
 char texture_name[100] = {"./shinichi.bmp"};  // lưu trữ tên file texture
 char texture_name_clear[100] = {"./clear.bmp"};
 
 float eyeX = 16, eyeY = 33, eyeZ = -21;
 float centerX = 16, centerY = 2, centerZ = 7;
+float dx = -1, dy = -1;    // khoảng cách hai ô
+float xtmp = 1, ytmp = 1;  // dấu của khoảng cách 1 là dương, -1 là âm
+float down = 0;            // lưu độ cao của cờ
+
 bool animationMove = false;  // trạng thái di chuyển cờ
 bool animationDown = false;  // trạng thái cờ bị ăn
-bool promotion = false;
+bool promotion = false;      // phong cấp
+bool en_passant = false;     // bắt tốt qua đường
+bool castling = false;      // nhập thành
+
+map<string,bool> chess_move; // kiểm tra con cờ di chuyển hay chưa
 
 vector<GLfloat> MatrixEat_Blue;    // lưu các con cờ xanh bị ăn
 vector<GLfloat> MatrixEat_Yellow;  // lưu các con cờ vàng bị ăn
@@ -217,8 +228,7 @@ void processInput(int x, int y) {
         if (x_old != -1 && y_old != -1)
             MatrixBoard[x_old][y_old].choose = false;
         MatrixBoard[x][y].choose = true;  // chọn cờ
-        if ((MatrixBoard[x][y].move ||
-             MatrixBoard[x][y].target)) {  // di chuyển cờ và ăn cờ đối phương
+        if ((MatrixBoard[x][y].move || MatrixBoard[x][y].target)) {  // di chuyển cờ và ăn cờ đối phương
 
             x_down = x;
             y_down = y;
@@ -237,11 +247,12 @@ void processInput(int x, int y) {
             animationMove = true;
             
             ruleSwapChess(MatrixBoard, MatrixEat_Blue, MatrixEat_Yellow, x_old, y_old, x, y, x_down,
-                          y_down, g_chessDown);
+                          y_down, g_chessDown,en_passant,castling,chess_move);
 
             if (MatrixBoard[x][y].name[1] != player[0])
-                ruleDirection(MatrixBoard, x, y);
-            if(MatrixBoard[x][y].name[0] && (x==0 || x==7)){ // tốt vị trí cuối ở đối thủ
+                ruleDirection(MatrixBoard, x, y,en_passant,chess_move,castling);
+
+            if(MatrixBoard[x][y].name[0] == 'P' && (x==0 || x==7)){ // tốt vị trí cuối ở đối thủ
                 if(ruleCheckBoundary(x,y)){
                     promotion = true;
                 }
@@ -265,7 +276,7 @@ void processInput(int x, int y) {
         }
         else if (!MatrixBoard[x][y].move && MatrixBoard[x][y].name[1] == player[0]) {  // xác định hướng đi của cờ
             ruleClear(MatrixBoard);
-            ruleDirection(MatrixBoard, x, y);
+            ruleDirection(MatrixBoard, x, y,en_passant,chess_move,castling);
         }
         else if (!MatrixBoard[x][y].move){
             ruleClear(MatrixBoard);
@@ -277,6 +288,7 @@ void processInput(int x, int y) {
         //     cout << endl;
         // }
         glutTimerFunc(0, timer, 0);
+        cout << player << endl;
     }
     
 
@@ -302,6 +314,10 @@ void tasten(unsigned char key, int xmouse, int ymouse) {
         x = xmove;
         y = ymove;
         processInput(x, y);
+    }
+
+    if(key == 'q'){
+        player = ruleSwapPlayer(player);
     }
     glutPostRedisplay();
 }
