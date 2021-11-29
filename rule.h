@@ -12,6 +12,10 @@ string ruleSwapPlayer(string s){
     return "BULE"; 
 }
 
+void ruleCheck(Cell Board[8][8], int x, int y, bool &check){
+    if(Board[x][y].name[0] == 'K') check = true;
+}
+
 bool ruleCheckLineEmpty_Y(Cell Board[8][8], int x, int yfrom, int yto){
 
     int from = min(yfrom,yto);
@@ -45,8 +49,8 @@ void ruleSwapChess(Cell Board[8][8], vector<GLfloat> &Eat_bule, vector<GLfloat> 
                     int xmove, int ymove,
                     int &x_down, int &y_down, 
                     GLfloat &shape,
-                    bool &en_passant, bool &castling,
-                    map<string,bool> &chess_move){
+                    map<string,bool> &pawn_en_passant, bool &castling,
+                    map<string,bool> &chess_move, bool &engame){
     
     int tmp = 1;
     char player = Board[xcurrent][ycurrent].name[1];
@@ -57,30 +61,34 @@ void ruleSwapChess(Cell Board[8][8], vector<GLfloat> &Eat_bule, vector<GLfloat> 
     
     if(castling){
 
-        if(ymove == 2){
-            Board[xmove][3] = Board[xmove][0];
-            Board[xmove][0] = Cell();
+        if(xmove == 0){
+            if(ymove == 2){
+                Board[xmove][3] = Board[xmove][0];
+                Board[xmove][0] = Cell();
+            }
+            if(ymove == 6){
+                Board[xmove][5] = Board[xmove][7];
+                Board[xmove][7] = Cell();
+            }
         }
 
-        if(ymove == 1){
-            Board[xmove][2] = Board[xmove][0];
-            Board[xmove][0] = Cell();
-        }
+        if(xmove == 7){
+            if(ymove == 1){
+                Board[xmove][2] = Board[xmove][0];
+                Board[xmove][0] = Cell();
+            }
 
-        if(ymove == 6){
-            Board[xmove][5] = Board[xmove][7];
-            Board[xmove][7] = Cell();
-        }
-
-        if(ymove == 5){
-            Board[xmove][4] = Board[xmove][0];
-            Board[xmove][0] = Cell();
+            if(ymove == 5){
+                Board[xmove][4] = Board[xmove][0];
+                Board[xmove][0] = Cell();
+            }
         }
 
         castling = false;
     }
 
-    if(abs(xcurrent-xmove)==2 && Board[xcurrent][ycurrent].name[0]=='P') en_passant = true;
+    if(abs(xcurrent-xmove)==2 && Board[xcurrent][ycurrent].name[0]=='P') 
+        pawn_en_passant[to_string(xmove)+to_string(ymove)] = true;
 
     if(ruleCheckBoundary(xmove-tmp,ymove) && ruleCheckBoundary(xmove,ymove)){
     
@@ -110,8 +118,8 @@ void ruleSwapChess(Cell Board[8][8], vector<GLfloat> &Eat_bule, vector<GLfloat> 
 }
 
 
-void ruleDirection(Cell Board[8][8] ,int xlocal, int ylocal, 
-                    bool &en_passant, map<string,bool> &chess_move, bool&castling){
+void ruleDirection(bool showMove,Cell Board[8][8] ,int xlocal, int ylocal, 
+                    map<string,bool> &pawn_en_passant, map<string,bool> &chess_move, bool&castling,bool &check){
     int tmp = 1;
     char name_chess = Board[xlocal][ylocal].name[0];
     char player = Board[xlocal][ylocal].name[1];
@@ -129,11 +137,12 @@ void ruleDirection(Cell Board[8][8] ,int xlocal, int ylocal,
 
                 if(ruleCheckBoundary(xlocal+xd,ylocal+yd)){
                     if(Board[xlocal+xd][ylocal+yd].name[1]!=player && Board[xlocal+xd][ylocal+yd].name!="empty"){
-                        Board[xlocal+xd][ylocal+yd].target = true;
+                        if(showMove) Board[xlocal+xd][ylocal+yd].target = true;
+                        ruleCheck(Board,xlocal+xd,ylocal+yd,check);
                         break;
                     }
                     else if(Board[xlocal+xd][ylocal+yd].name == "empty"){
-                        Board[xlocal+xd][ylocal+yd].move = true;
+                        if(showMove) Board[xlocal+xd][ylocal+yd].move = true;
                     }
                     else if(Board[xlocal+xd][ylocal+yd].name!="empty"){
                         break;
@@ -152,10 +161,11 @@ void ruleDirection(Cell Board[8][8] ,int xlocal, int ylocal,
         for(int i=0; i<8 ;i++){
             if(ruleCheckBoundary(xlocal+d[i],ylocal+d[numStep-i])){
                 if(Board[xlocal+d[i]][ylocal+d[numStep-i]].name[1]!=player && Board[xlocal+d[i]][ylocal+d[numStep-i]].name!="empty"){
-                    Board[xlocal+d[i]][ylocal+d[numStep-i]].target = true;
+                    if(showMove) Board[xlocal+d[i]][ylocal+d[numStep-i]].target = true;
+                    ruleCheck(Board,xlocal+d[i],ylocal+d[numStep-i],check);
                 }
                 else if(Board[xlocal+d[i]][ylocal+d[numStep-i]].name == "empty"){
-                    Board[xlocal+d[i]][ylocal+d[numStep-i]].move = true;
+                    if(showMove) Board[xlocal+d[i]][ylocal+d[numStep-i]].move = true;
                 }
             }
         }
@@ -174,11 +184,12 @@ void ruleDirection(Cell Board[8][8] ,int xlocal, int ylocal,
                 if(ruleCheckBoundary(xlocal+xd,ylocal+yd)){
 
                     if(Board[xlocal+xd][ylocal+yd].name[1]!=player && Board[xlocal+xd][ylocal+yd].name!="empty"){
-                        Board[xlocal+xd][ylocal+yd].target = true;
+                        if(showMove) Board[xlocal+xd][ylocal+yd].target = true;
+                        ruleCheck(Board,xlocal+xd,ylocal+yd,check);
                         break;
                     }
                     else if(Board[xlocal+xd][ylocal+yd].name == "empty"){
-                        Board[xlocal+xd][ylocal+yd].move = true;
+                        if(showMove) Board[xlocal+xd][ylocal+yd].move = true;
                     }
                     else if(Board[xlocal+xd][ylocal+yd].name!="empty"){
                         break;
@@ -198,10 +209,11 @@ void ruleDirection(Cell Board[8][8] ,int xlocal, int ylocal,
         for(int i=0; i<8 ;i++){
             if(ruleCheckBoundary(xlocal+dx[i],ylocal+dy[i])){
                 if(Board[xlocal+dx[i]][ylocal+dy[i]].name[1]!=player && Board[xlocal+dx[i]][ylocal+dy[i]].name!="empty"){
-                    Board[xlocal+dx[i]][ylocal+dy[i]].target = true;
+                    if(showMove) Board[xlocal+dx[i]][ylocal+dy[i]].target = true;
+                    ruleCheck(Board,xlocal+dx[i],ylocal+dy[i],check);
                 }
                 else if(Board[xlocal+dx[i]][ylocal+dy[i]].name == "empty"){
-                    Board[xlocal+dx[i]][ylocal+dy[i]].move = true;
+                    if(showMove) Board[xlocal+dx[i]][ylocal+dy[i]].move = true;
                 }
             }
         }
@@ -211,7 +223,7 @@ void ruleDirection(Cell Board[8][8] ,int xlocal, int ylocal,
             for(int i=0; i<2; i++){
                 int add_move = (d[i] == 0) ? -2 : 2;
                 if(!chess_move[to_string(xlocal)+to_string(d[i])] && ruleCheckLineEmpty_Y(Board,xlocal,ylocal,d[i])){
-                    Board[xlocal][ylocal+add_move].move = true;
+                    if(showMove) Board[xlocal][ylocal+add_move].move = true;
                     castling = true;
                 }
             }
@@ -232,11 +244,12 @@ void ruleDirection(Cell Board[8][8] ,int xlocal, int ylocal,
                 if(ruleCheckBoundary(xlocal+xd,ylocal+yd)){
 
                     if(Board[xlocal+xd][ylocal+yd].name[1]!=player && Board[xlocal+xd][ylocal+yd].name!="empty"){
-                        Board[xlocal+xd][ylocal+yd].target = true;
+                        if(showMove) Board[xlocal+xd][ylocal+yd].target = true;
+                        ruleCheck(Board,xlocal+xd,ylocal+yd,check);
                         break;
                     }
                     else if(Board[xlocal+xd][ylocal+yd].name == "empty"){
-                        Board[xlocal+xd][ylocal+yd].move = true;
+                        if(showMove) Board[xlocal+xd][ylocal+yd].move = true;
                     }
                     else if(Board[xlocal+xd][ylocal+yd].name!="empty"){
                         break;
@@ -254,7 +267,7 @@ void ruleDirection(Cell Board[8][8] ,int xlocal, int ylocal,
             for(int i=1; i<3 ;i++){
                 if(ruleCheckBoundary(xlocal+i*tmp,ylocal)){
                     if(Board[xlocal+i*tmp][ylocal].name == "empty"){
-                        Board[xlocal+i*tmp][ylocal].move = true;
+                        if(showMove) Board[xlocal+i*tmp][ylocal].move = true;
                     }
                     else break;
                 }
@@ -262,34 +275,36 @@ void ruleDirection(Cell Board[8][8] ,int xlocal, int ylocal,
         }
         if(ruleCheckBoundary(xlocal+tmp,ylocal+tmp)){
             if(Board[xlocal+tmp][ylocal+tmp].name[1]!=player && Board[xlocal+tmp][ylocal+tmp].name!="empty"){   // kiểm tra có phải gặp đối thử hay không
-                Board[xlocal+tmp][ylocal+tmp].target = true;
+                if(showMove) Board[xlocal+tmp][ylocal+tmp].target = true;
+                ruleCheck(Board,xlocal+tmp,ylocal+tmp,check);
             }
         }
         if(ruleCheckBoundary(xlocal+tmp,ylocal-tmp)){
             if(Board[xlocal+tmp][ylocal-tmp].name[1]!=player && Board[xlocal+tmp][ylocal-tmp].name!="empty"){
-                Board[xlocal+tmp][ylocal-tmp].target = true;
+                if(showMove) Board[xlocal+tmp][ylocal-tmp].target = true;
+                ruleCheck(Board,xlocal+tmp,ylocal-tmp,check);
             }
         }
-        if(ruleCheckBoundary(xlocal+tmp,ylocal) && Board[xlocal+tmp][ylocal].name == "empty") Board[xlocal+tmp][ylocal].move = true; // tốt vị trí khác được đi 1 
-                                                                                                                                    //ô nhưng không thể đi nếu vật cảng phía trước
+        if(ruleCheckBoundary(xlocal+tmp,ylocal) && Board[xlocal+tmp][ylocal].name == "empty") 
+            if(showMove) Board[xlocal+tmp][ylocal].move = true; // tốt vị trí khác được đi 1 
+                                                                //ô nhưng không thể đi nếu vật cảng phía trước
 
         // Luật bắt tốt qua đường
-        if(en_passant){
-            if((player=='B' && xlocal==4) || (player=='Y' && xlocal==3)){
-                int d[2] = {1,-1};
-                for(int i = 0; i<2 ;i++){
-                    if(ruleCheckBoundary(xlocal,ylocal+d[i])){
-                        if(Board[xlocal][ylocal+d[i]].name[0]=='P' 
-                        && Board[xlocal][ylocal+d[i]].name[1]!=player 
-                        && Board[xlocal][ylocal+d[i]].name!="empty"){   // kiểm tra có phải gặp đối thủ là tốt hay không
-                            Board[xlocal+tmp][ylocal+d[i]].target = true;
-                        }
+        if((player=='B' && xlocal==4) || (player=='Y' && xlocal==3)){
+            int d[2] = {1,-1};
+            for(int i = 0; i<2 ;i++){
+                if(ruleCheckBoundary(xlocal,ylocal+d[i])){
+                    if(Board[xlocal][ylocal+d[i]].name[0]=='P' 
+                    && Board[xlocal][ylocal+d[i]].name[1]!=player 
+                    && Board[xlocal][ylocal+d[i]].name!="empty"
+                    && pawn_en_passant[to_string(xlocal)+to_string(ylocal+d[i])]){   // kiểm tra có phải gặp đối thủ là tốt hay không
+                        Board[xlocal+tmp][ylocal+d[i]].target = true;
+                        ruleCheck(Board,xlocal+tmp,ylocal+d[i],check);
                     }
                 }
             }
         }
-        en_passant = false;
-
+        if(showMove) pawn_en_passant.clear();
     }
 
 }

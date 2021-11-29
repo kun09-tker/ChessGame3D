@@ -19,6 +19,7 @@ GLuint Knight_view(char name_color) {
         color[1] = 1;
         color[2] = 0;
     }
+    
     GLfloat g_base;
     GLfloat g_onbase;
     GLfloat g_onbase1;
