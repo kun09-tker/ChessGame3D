@@ -3,14 +3,6 @@
 #include <GL/glut.h>
 #include <math.h>
 
-void SetMaterialColor(float r,float g,float b, float apha)
-{
-    GLfloat ambien[] = {r, g, b, apha};
-    GLfloat diff_use[] = {r,g, b, apha};
-    
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambien);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diff_use);
-}
 
 GLuint MakeBox(const float length, const float width, const float height)
 {
@@ -294,3 +286,45 @@ GLuint MakeRWindow(const float &bottom_size, const float &top_size, const float 
     return dp_list;
 }
 
+GLuint MakeCube(const float& size)
+{
+  GLuint boxDisplay;
+  boxDisplay=glGenLists(1);
+  glNewList(boxDisplay,GL_COMPILE);
+ 
+  glBegin(GL_QUADS);
+  // Front Face
+  glTexCoord2f(0.0f, 0.0f); glVertex3f(-size, -size, size);
+  glTexCoord2f(1.0f, 0.0f); glVertex3f( size, -size, size);
+  glTexCoord2f(1.0f, 1.0f); glVertex3f( size, size, size);
+  glTexCoord2f(0.0f, 1.0f); glVertex3f(-size, size, size);
+  // Back Face
+  glTexCoord2f(1.0f, 0.0f); glVertex3f(-size, -size, -size);
+  glVertex3f(-size, size, -size);
+  glVertex3f( size, size, -size);
+  glTexCoord2f(0.0f, 0.0f); glVertex3f( size, -size, -size);
+  // Top Face
+  glTexCoord2f(0.0f, 1.0f); glVertex3f(-size, size, -size);
+  glTexCoord2f(0.0f, 0.0f); glVertex3f(-size, size, size);
+  glTexCoord2f(1.0f, 0.0f); glVertex3f( size, size, size);
+  glTexCoord2f(1.0f, 1.0f); glVertex3f( size, size, -size);
+  // Bottom Face
+  glTexCoord2f(1.0f, 1.0f); glVertex3f(-size, -size, -size);
+  glTexCoord2f(0.0f, 1.0f); glVertex3f( size, -size, -size);
+  glTexCoord2f(0.0f, 0.0f); glVertex3f( size, -size, size);
+  glTexCoord2f(1.0f, 0.0f); glVertex3f(-size, -size, size);
+  // Right face
+  glTexCoord2f(1.0f, 0.0f); glVertex3f( size, -size, -size);
+  glTexCoord2f(1.0f, 1.0f); glVertex3f( size, size, -size);
+  glTexCoord2f(0.0f, 1.0f); glVertex3f( size, size, size);
+  glTexCoord2f(0.0f, 0.0f); glVertex3f( size, -size, size);
+  // Left Face
+  glTexCoord2f(0.0f, 0.0f); glVertex3f(-size, -size, -size);
+  glTexCoord2f(1.0f, 0.0f); glVertex3f(-size, -size, size);
+  glTexCoord2f(1.0f, 1.0f); glVertex3f(-size, size, size);
+  glTexCoord2f(0.0f, 1.0f); glVertex3f(-size, size, -size);
+  glEnd();
+ 
+  glEndList();
+  return boxDisplay;
+}
