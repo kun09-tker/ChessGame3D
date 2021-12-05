@@ -110,7 +110,7 @@ int main() {
 
         // don't forget to enable shader before setting uniforms
         ourShader.use();
-        ourShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
+        ourShader.setVec3("objectColor", 1.0f, 1.0f, 1.0f);
         ourShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
         ourShader.setVec3("lightPos", lightPos);
 
