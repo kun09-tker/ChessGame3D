@@ -56,7 +56,6 @@ void renderBitMap(float x, float y,float z, void *font, char *string, float xSca
 }
 void drawTextColor(const char* text,float x, float y,float z, float r, float g, float b, float apha , float xScale = 0, float yScale = 0, float zScale = 0){
 	char buf[1000] = { 0 };
-    sprintf_s(buf, text);
     SetLightColor(r,g,b,apha);
 	renderBitMap(x, y,z, GLUT_BITMAP_TIMES_ROMAN_24, buf, xScale, yScale, zScale);
     SetLightColor(0,0,0,1);
