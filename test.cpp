@@ -1,375 +1,253 @@
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 
-#ifdef __APPLE__
-#include <GLUT/glut.h>
-#else
-#include <GL/glut.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/string_cast.hpp>
+#include <iostream>
+#include <vector>
+
+#include "camera.h"
+#include "light.h"
+#include "program.h"
+#include "vao.h"
+
+static Program program;
+static const glm::vec3 color1(1.0f, 1.0f, 1.0f);
+static const glm::vec3 color2(0.2f, 0.2f, 0.2f);
+static int framebuffer_width, framebuffer_height;
+static int window_width, window_height;
+static bool skybox_enabled_demo, shadow_enabled_demo, reflection_enabled_demo;
+static bool light_enabled_demo[2];
+std::vector<Light> lights;
+static GLFWwindow* window;
+static double lastTime;
+static int nbFrames;
+static int nbFramesLastSecond;
+// Pour la camera
+static int midWindowX, midWindowY;
+Camera camera;
+glm::mat4 projection_matrix, normal_matrix;
+glm::mat4 view_matrix =
+    glm::lookAt(camera.getPosition(), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+// settings
+const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_HEIGHT = 600;
+
+#define ZNEAR 10.0f
+#define ZFAR 10000.0f
+#define FOV 0.785f
+
+// list Object
+std::vector<Vao> list_object;
+
+void renderSkybox();
+void initOpenGL();
+void display();
+void renderScene();
+void error_callback(int error, const char* description) { fputs(description, stderr); }
+void window_size_callback(GLFWwindow* window, int width, int height);
+void setPerspective(int width, int height);
+
+int main() {
+    // glfw: initialize and configure
+    // ------------------------------
+    light_enabled_demo[0] = light_enabled_demo[1] = false;
+
+    skybox_enabled_demo = shadow_enabled_demo = reflection_enabled_demo = light_enabled_demo[0] =
+        light_enabled_demo[1] = true;
+
+    glfwSetErrorCallback(error_callback);
+    if (!glfwInit())
+        exit(EXIT_FAILURE);
+
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    window_height = 400;
+    window_width = 800;
+
+    midWindowX = window_width / 2;
+    midWindowY = window_height / 2;
+    window = glfwCreateWindow(window_width, window_height, "Chess3D", NULL, NULL);
+    if (!window) {
+        glfwTerminate();
+        exit(EXIT_FAILURE);
+    }
+
+    glfwMakeContextCurrent(window);
+
+#ifndef __APPLE__
+    glewExperimental = GL_TRUE;
+    glewInit();
 #endif
+    // Make OpenGL
+    initOpenGL();
+    camera = Camera(10, 10);
 
-// angle of rotation for the camera direction
-float angle = 0.0f;
+    glfwSwapInterval(0);
+    glfwSetWindowSizeCallback(window, window_size_callback);
 
-// actual vector representing the camera's direction
-float lx = 0.0f, lz = -1.0f;
+    lastTime = glfwGetTime();
+    nbFrames = 0;
+    nbFramesLastSecond = 100;
 
-// XZ position of the camera
-float x = 0.0f, z = 5.0f;
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    // render loop
+    // -----------
+    while (!glfwWindowShouldClose(window)) {
+        display();
+        // render
+        // ------
+        /* computing fps */
+        double currentTime = glfwGetTime();
+        nbFrames++;
+        if (currentTime - lastTime >= 1.0) {
+            nbFramesLastSecond = nbFrames;
 
-// the key states. These variables will be zero
-// when no key is being presses
-float deltaAngle = 0.0f;
-float deltaMove = 0;
-int xOrigin = -1;
+            // Set title
+            std::string title = "Chess 3D - FPS: " + std::to_string(nbFrames);
+            glfwSetWindowTitle(window, title.c_str());
 
-// Constant definitions for Menus
-#define RED 1
-#define GREEN 2
-#define BLUE 3
-#define ORANGE 4
-
-#define FILL 1
-#define LINE 2
-
-// Pop up menu identifiers
-int fillMenu, fontMenu, mainMenu, colorMenu;
-
-// color for the nose
-float red = 1.0f, blue = 0.5f, green = 0.5f;
-
-// scale of snowman
-float scale = 1.0f;
-
-// menu status
-int menuFlag = 0;
-
-// default font
-void *font = GLUT_BITMAP_TIMES_ROMAN_24;
-
-#define INT_GLUT_BITMAP_8_BY_13 1
-#define INT_GLUT_BITMAP_9_BY_15 2
-#define INT_GLUT_BITMAP_TIMES_ROMAN_10 3
-#define INT_GLUT_BITMAP_TIMES_ROMAN_24 4
-#define INT_GLUT_BITMAP_HELVETICA_10 5
-#define INT_GLUT_BITMAP_HELVETICA_12 6
-#define INT_GLUT_BITMAP_HELVETICA_18 7
-
-void changeSize(int w, int h) {
-    // Prevent a divide by zero, when window is too short
-    // (you cant make a window of zero width).
-    if (h == 0)
-        h = 1;
-
-    float ratio = w * 1.0 / h;
-
-    // Use the Projection Matrix
-    glMatrixMode(GL_PROJECTION);
-
-    // Reset Matrix
-    glLoadIdentity();
-
-    // Set the viewport to be the entire window
-    glViewport(0, 0, w, h);
-
-    // Set the correct perspective.
-    gluPerspective(45.0f, ratio, 0.1f, 100.0f);
-
-    // Get Back to the Modelview
-    glMatrixMode(GL_MODELVIEW);
-}
-
-void drawSnowMan() {
-    glScalef(scale, scale, scale);
-    glColor3f(1.0f, 1.0f, 1.0f);
-
-    // Draw Body
-    glTranslatef(0.0f, 0.75f, 0.0f);
-    glutSolidSphere(0.75f, 20, 20);
-
-    // Draw Head
-    glTranslatef(0.0f, 1.0f, 0.0f);
-    glutSolidSphere(0.25f, 20, 20);
-
-    // Draw Eyes
-    glPushMatrix();
-    glColor3f(0.0f, 0.0f, 0.0f);
-    glTranslatef(0.05f, 0.10f, 0.18f);
-    glutSolidSphere(0.05f, 10, 10);
-    glTranslatef(-0.1f, 0.0f, 0.0f);
-    glutSolidSphere(0.05f, 10, 10);
-    glPopMatrix();
-
-    // Draw Nose
-    glColor3f(red, green, blue);
-    glRotatef(0.0f, 1.0f, 0.0f, 0.0f);
-    glutSolidCone(0.08f, 0.5f, 10, 2);
-
-    glColor3f(1.0f, 1.0f, 1.0f);
-}
-
-void renderBitmapString(float x, float y, float z, void *font, char *string) {
-    char *c;
-    glRasterPos3f(x, y, z);
-    for (c = string; *c != '\0'; c++) {
-        glutBitmapCharacter(font, *c);
+            nbFrames = 0;
+            lastTime += 1.0;
+        }
     }
+
+    // glfw: terminate, clearing all previously allocated GLFW resources.
+    // ------------------------------------------------------------------
+    glfwDestroyWindow(window);
+    glfwTerminate();
+    exit(EXIT_SUCCESS);
 }
 
-void computePos(float deltaMove) {
-    x += deltaMove * lx * 0.1f;
-    z += deltaMove * lz * 0.1f;
+void renderScene() {
+    program.use();
+
+    // set view
+    const glm::mat4& inv_view_matrix = glm::inverse(view_matrix);
+
+    glUniformMatrix4fv(glGetUniformLocation(program.getId(), "view_matrix"), 1, GL_FALSE,
+                       glm::value_ptr(view_matrix));
+    glUniformMatrix4fv(glGetUniformLocation(program.getId(), "inv_view_matrix"), 1, GL_FALSE,
+                       glm::value_ptr(inv_view_matrix));
+
+    for (unsigned int i = 0; i < lights.size(); ++i) {
+        std::string uniform = "light_enabled[" + std::to_string(i) + "]";
+        glUniform1i(glGetUniformLocation(program.getId(), uniform.c_str()), light_enabled_demo[i]);
+    }
+
+    glViewport(0, 0, framebuffer_width, framebuffer_height);
+
+    for (auto& object : list_object) {
+        // std::cout << "render object";
+        glm::mat4 model_matrix = object.getModelMatrix();
+        glUniform3fv(glGetUniformLocation(program.getId(), "diffuse_color"), 1,
+                     object.getDiffuseColorArray());
+
+        glUniform3fv(glGetUniformLocation(program.getId(), "diffuse_color"), 1,
+                     object.getDiffuseColorArray());
+
+        glm::mat4 view_model_matrix = view_matrix * model_matrix;
+        glm::mat4 proj_view_model_matrix = projection_matrix * view_model_matrix;
+
+        glUniformMatrix4fv(glGetUniformLocation(program.getId(), "proj_view_model"), 1, GL_FALSE,
+                           glm::value_ptr(proj_view_model_matrix));
+        glUniformMatrix4fv(glGetUniformLocation(program.getId(), "view_model"), 1, GL_FALSE,
+                           glm::value_ptr(view_model_matrix));
+        glUniform1i(glGetUniformLocation(program.getId(), "texture_enabled"),
+                    object.isTextureEnabled());
+        glUniform1i(glGetUniformLocation(program.getId(), "skybox_enabled"), 0);
+
+        const GLfloat* normal_matrix_array =
+            glm::value_ptr(glm::transpose(glm::inverse(view_model_matrix)));
+        glUniformMatrix4fv(glGetUniformLocation(program.getId(), "normal_matrix"), 1, GL_FALSE,
+                           normal_matrix_array);
+
+        glBindVertexArray(object.getId());
+        glDrawArrays(GL_TRIANGLES, 0, object.getVertexCount());
+    }
+    glBindVertexArray(0);
 }
 
-void renderScene(void) {
-    if (deltaMove)
-        computePos(deltaMove);
+void display() {
+    // for (unsigned int i = 0; i < scene.getLightCount(); ++i) renderShadow(i);
 
-    // Clear Color and Depth Buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // renderSkybox();
+    renderScene();
 
-    // Reset transformations
-    glLoadIdentity();
-    // Set the camera
-    gluLookAt(x, 1.0f, z, x + lx, 1.0f, z + lz, 0.0f, 1.0f, 0.0f);
-
-    // Draw ground
-
-    glColor3f(0.9f, 0.9f, 0.9f);
-    glBegin(GL_QUADS);
-    glVertex3f(-100.0f, 0.0f, -100.0f);
-    glVertex3f(-100.0f, 0.0f, 100.0f);
-    glVertex3f(100.0f, 0.0f, 100.0f);
-    glVertex3f(100.0f, 0.0f, -100.0f);
-    glEnd();
-
-    // Draw 36 SnowMen
-    char number[3];
-    for (int i = -3; i < 3; i++)
-        for (int j = -3; j < 3; j++) {
-            glPushMatrix();
-            glTranslatef(i * 10.0f, 0.0f, j * 10.0f);
-            drawSnowMan();
-            sprintf(number, "%d", (i + 3) * 6 + (j + 3));
-            renderBitmapString(0.0f, 0.5f, 0.0f, (void *)font, number);
-            glPopMatrix();
-        }
-
-    glutSwapBuffers();
+    glfwSwapBuffers(window);
+    glfwPollEvents();
 }
 
-// -----------------------------------
-//             KEYBOARD
-// -----------------------------------
-
-void processNormalKeys(unsigned char key, int xx, int yy) {
-    switch (key) {
-    case 27:
-        glutDestroyMenu(mainMenu);
-        glutDestroyMenu(fillMenu);
-        glutDestroyMenu(colorMenu);
-        glutDestroyMenu(fontMenu);
-        exit(0);
-        break;
-    }
-}
-
-void pressKey(int key, int xx, int yy) {
-    switch (key) {
-    case GLUT_KEY_UP:
-        deltaMove = 0.5f;
-        break;
-    case GLUT_KEY_DOWN:
-        deltaMove = -0.5f;
-        break;
-    }
-}
-
-void releaseKey(int key, int x, int y) {
-    switch (key) {
-    case GLUT_KEY_UP:
-    case GLUT_KEY_DOWN:
-        deltaMove = 0;
-        break;
-    }
-}
-
-// -----------------------------------
-//             MOUSE
-// -----------------------------------
-
-void mouseMove(int x, int y) {
-    // this will only be true when the left button is down
-    if (xOrigin >= 0) {
-        // update deltaAngle
-        deltaAngle = (x - xOrigin) * 0.001f;
-
-        // update camera's direction
-        lx = sin(angle + deltaAngle);
-        lz = -cos(angle + deltaAngle);
-    }
-}
-
-void mouseButton(int button, int state, int x, int y) {
-    // only start motion if the left button is pressed
-    if (button == GLUT_LEFT_BUTTON) {
-        // when the button is released
-        if (state == GLUT_UP) {
-            angle += deltaAngle;
-            xOrigin = -1;
-        } else {  // state = GLUT_DOWN
-            xOrigin = x;
-        }
-    }
-}
-
-// -----------------------------------
-//             MENUS
-// -----------------------------------
-
-void processMenuStatus(int status, int x, int y) {
-    if (status == GLUT_MENU_IN_USE)
-        menuFlag = 1;
-    else
-        menuFlag = 0;
-}
-
-void processMainMenu(int option) {
-    // nothing to do in here
-    // all actions are for submenus
-}
-
-void processFillMenu(int option) {
-    switch (option) {
-    case FILL:
-        glPolygonMode(GL_FRONT, GL_FILL);
-        break;
-    case LINE:
-        glPolygonMode(GL_FRONT, GL_LINE);
-        break;
-    }
-}
-
-void processFontMenu(int option) {
-    switch (option) {
-    case INT_GLUT_BITMAP_8_BY_13:
-        font = GLUT_BITMAP_8_BY_13;
-        break;
-    case INT_GLUT_BITMAP_9_BY_15:
-        font = GLUT_BITMAP_9_BY_15;
-        break;
-    case INT_GLUT_BITMAP_TIMES_ROMAN_10:
-        font = GLUT_BITMAP_TIMES_ROMAN_10;
-        break;
-    case INT_GLUT_BITMAP_TIMES_ROMAN_24:
-        font = GLUT_BITMAP_TIMES_ROMAN_24;
-        break;
-    case INT_GLUT_BITMAP_HELVETICA_10:
-        font = GLUT_BITMAP_HELVETICA_10;
-        break;
-    case INT_GLUT_BITMAP_HELVETICA_12:
-        font = GLUT_BITMAP_HELVETICA_12;
-        break;
-    case INT_GLUT_BITMAP_HELVETICA_18:
-        font = GLUT_BITMAP_HELVETICA_18;
-        break;
-    }
-}
-
-void processColorMenu(int option) {
-    switch (option) {
-    case RED:
-        red = 1.0f;
-        green = 0.0f;
-        blue = 0.0f;
-        break;
-    case GREEN:
-        red = 0.0f;
-        green = 1.0f;
-        blue = 0.0f;
-        break;
-    case BLUE:
-        red = 0.0f;
-        green = 0.0f;
-        blue = 1.0f;
-        break;
-    case ORANGE:
-        red = 1.0f;
-        green = 0.5f;
-        blue = 0.5f;
-        break;
-    }
-}
-
-void createPopupMenus() {
-    fontMenu = glutCreateMenu(processFontMenu);
-
-    glutAddMenuEntry("BITMAP_8_BY_13 ", INT_GLUT_BITMAP_8_BY_13);
-    glutAddMenuEntry("BITMAP_9_BY_15", INT_GLUT_BITMAP_9_BY_15);
-    glutAddMenuEntry("BITMAP_TIMES_ROMAN_10 ", INT_GLUT_BITMAP_TIMES_ROMAN_10);
-    glutAddMenuEntry("BITMAP_TIMES_ROMAN_24", INT_GLUT_BITMAP_TIMES_ROMAN_24);
-    glutAddMenuEntry("BITMAP_HELVETICA_10 ", INT_GLUT_BITMAP_HELVETICA_10);
-    glutAddMenuEntry("BITMAP_HELVETICA_12", INT_GLUT_BITMAP_HELVETICA_12);
-    glutAddMenuEntry("BITMAP_HELVETICA_18", INT_GLUT_BITMAP_HELVETICA_18);
-
-    fillMenu = glutCreateMenu(processFillMenu);
-
-    glutAddMenuEntry("Fill", FILL);
-    glutAddMenuEntry("Line", LINE);
-
-    colorMenu = glutCreateMenu(processColorMenu);
-    glutAddMenuEntry("Red", RED);
-    glutAddMenuEntry("Blue", BLUE);
-    glutAddMenuEntry("Green", GREEN);
-    glutAddMenuEntry("Orange", ORANGE);
-
-    mainMenu = glutCreateMenu(processMainMenu);
-
-    glutAddSubMenu("Polygon Mode", fillMenu);
-    glutAddSubMenu("Color", colorMenu);
-    glutAddSubMenu("Font", fontMenu);
-    // attach the menu to the right button
-    glutAttachMenu(GLUT_RIGHT_BUTTON);
-
-    // this will allow us to know if the menu is active
-    glutMenuStatusFunc(processMenuStatus);
-}
-
-// -----------------------------------
-//             MAIN
-// -----------------------------------
-
-int main(int argc, char **argv) {
-    // init GLUT and create window
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
-    glutInitWindowPosition(100, 100);
-    glutInitWindowSize(320, 320);
-    glutCreateWindow("Lighthouse3D - GLUT Tutorial");
-
-    // register callbacks
-    glutDisplayFunc(renderScene);
-    glutReshapeFunc(changeSize);
-    glutIdleFunc(renderScene);
-
-    glutIgnoreKeyRepeat(1);
-    glutKeyboardFunc(processNormalKeys);
-    glutSpecialFunc(pressKey);
-    glutSpecialUpFunc(releaseKey);
-
-    // here are the two new functions
-    glutMouseFunc(mouseButton);
-    glutMotionFunc(mouseMove);
-
-    // OpenGL init
+void initOpenGL() {
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
+    glDepthFunc(GL_LESS);
+    glClearColor(0.f, 0.f, 0.f, 1.f);
 
-    // init Menus
-    createPopupMenus();
+    program.init();
+    // program_shadows.initForShadowMap();
+    // program_selection.initForSelection();
 
-    // enter GLUT event processing cycle
-    glutMainLoop();
+    // Init light
+    lights.push_back(Light(glm::vec3(400.f, 400.f, 400.f), glm::vec3(0.2f, 0.2f, 0.2f),
+                           glm::vec3(0.5f, 0.5f, 0.5f)));
+    lights.push_back(Light(glm::vec3(-400.f, 400.f, -400.f), glm::vec3(0.2f, 0.2f, 0.2f),
+                           glm::vec3(0.5f, 0.5f, 0.5f)));
 
-    return 1;
+    // Init Model
+    Vao bishop;
+    bishop = Vao::loadObj("models/fou.obj", color1);
+    list_object.push_back(bishop);
+    std::cout << "Load model successfully" << std::endl;
+
+    // Init camera & projection_matrix
+    projection_matrix = glm::mat4(1.0f);
+    camera = Camera(window_width, window_height);
+
+    program.use();
+
+    setPerspective(window_width, window_height);
+    glUniformMatrix4fv(glGetUniformLocation(program.getId(), "projection_matrix"), 1, GL_FALSE,
+                       glm::value_ptr(projection_matrix));
+
+    glfwGetFramebufferSize(window, &framebuffer_width, &framebuffer_height);
+
+    for (unsigned int i = 0; i < lights.size(); ++i) {
+        const Light& light = lights[i];
+
+        std::string pos = "lights[" + std::to_string(i) + "].position";
+        std::string dcolor = "lights[" + std::to_string(i) + "].diffuse_color";
+        std::string scolor = "lights[" + std::to_string(i) + "].specular_color";
+
+        glUniform3fv(glGetUniformLocation(program.getId(), pos.c_str()), 1, &light.getPos()[0]);
+        glUniform3fv(glGetUniformLocation(program.getId(), dcolor.c_str()), 1,
+                     &light.getDiffuseColor()[0]);
+        glUniform3fv(glGetUniformLocation(program.getId(), scolor.c_str()), 1,
+                     &light.getSpecColor()[0]);
+    }
+}
+
+void window_size_callback(GLFWwindow* window, int width, int height) {
+    glfwGetFramebufferSize(window, &framebuffer_width, &framebuffer_height);
+
+    window_width = width;
+    window_height = height;
+
+    setPerspective(window_width, window_height);
+    glUniformMatrix4fv(glGetUniformLocation(program.getId(), "projection_matrix"), 1, GL_FALSE,
+                       glm::value_ptr(projection_matrix));
+}
+
+void setPerspective(int width, int height) {
+    projection_matrix = glm::mat4(1.0f);
+    projection_matrix = glm::perspective(FOV, (float)width / height, ZNEAR, ZFAR);
 }
