@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.js": "javascriptreact",
         "iomanip": "cpp",
         "iostream": "cpp",
         "ostream": "cpp",
@@ -47,7 +48,8 @@
         "stdexcept": "cpp",
         "streambuf": "cpp",
         "cinttypes": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "xiosbase": "cpp"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

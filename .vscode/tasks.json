@@ -9,12 +9,15 @@
                 "-o",
                 "${fileDirname}\\${fileBasenameNoExtension}.exe",
                 "${fileDirname}\\${fileBasenameNoExtension}.cpp",
+                "F:\\Learning\\DHMT\\ChessGame3D\\OpenGL\\src\\glad.c",
                 "-lm",
                 "-Wall",
-                "-lfreeglut",
-                "-lglew32",
                 "-lopengl32",
-                "-lglu32"
+                "-llibassimp",
+                "-lglew32",
+                "-lglu32",
+                "-lglfw3",
+                "-lgdi32"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
