@@ -40,9 +40,12 @@ float lastFrame = 0.0f;
 // lighting
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
+// Danh sách model
+vector<Model> list_model;
+
 // Hàm load model
-void loadModel(Shader &Program, Model &model, bool checkfirstPlayer, float checkTexture, float x, float y, float z)
-{
+void loadModel(Shader &Program, Model &model, bool checkfirstPlayer, float checkTexture, float x,
+               float y, float z) {
     /*
     Program là Shader
     model là model dùng để load lên
@@ -50,12 +53,9 @@ void loadModel(Shader &Program, Model &model, bool checkfirstPlayer, float check
     checkTexture dùng để biết file có texture để load cho đúng
     x,y,z là tọa độ
     */
-    if (checkfirstPlayer)
-    {
+    if (checkfirstPlayer) {
         Program.setVec3("objectColor", firstPlayer[0], firstPlayer[1], firstPlayer[2]);
-    }
-    else
-    {
+    } else {
         Program.setVec3("objectColor", secondPlayer[0], secondPlayer[1], secondPlayer[2]);
     }
     Program.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
@@ -71,13 +71,16 @@ void loadModel(Shader &Program, Model &model, bool checkfirstPlayer, float check
 
     // render the loaded model
     glm::mat4 model1 = glm::mat4(1.0f);
-    model1 = glm::translate(model1, glm::vec3(x, y, z));            // translate it down so it's at the center of the scene
-    model1 = glm::scale(model1, glm::vec3(0.005f, 0.005f, 0.005f)); // it's a bit too big for our scene, so scale it down
+    model1 = glm::translate(
+        model1, glm::vec3(x, y, z));  // translate it down so it's at the center of the scene
+    model1 = glm::scale(
+        model1,
+        glm::vec3(0.005f, 0.005f, 0.005f));  // it's a bit too big for our scene, so scale it down
     Program.setMat4("model", model1);
     model.Draw(Program);
 }
-int main()
-{
+
+int main() {
     // glfw: initialize and configure
     // ------------------------------
     glfwInit();
@@ -92,8 +95,7 @@ int main()
     // glfw tạo cửa sổ
     // --------------------
     GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Bàn cờ", NULL, NULL);
-    if (window == NULL)
-    {
+    if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
         return -1;
@@ -108,8 +110,7 @@ int main()
 
     // load tất cả hàm của glad
     // ---------------------------------------
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
@@ -127,12 +128,12 @@ int main()
     // load models
     // -----------
     Shader ourShader("1.model_loading.vs", "1.model_loading.fs");
-    Model Knight("models/Knight.obj");
-    Model Queen("models/Queen.obj");
-    Model Bishop("models/Bishop.obj");
-    Model Pawn("models/Pawn.obj");
-    Model King("models/King.obj");
-    Model Rook("models/Rook.obj");
+    list_model.push_back(Model("models/Knight.obj"));
+    list_model.push_back(Model("models/Queen.obj"));
+    list_model.push_back(Model("models/Bishop.obj"));
+    list_model.push_back(Model("models/Pawn.obj"));
+    list_model.push_back(Model("models/King.obj"));
+    list_model.push_back(Model("models/Rook.obj"));
     // Model ourModel("backpack.obj");
 
     // lighting
@@ -142,8 +143,7 @@ int main()
 
     // render loop
     // -----------
-    while (!glfwWindowShouldClose(window))
-    {
+    while (!glfwWindowShouldClose(window)) {
         // per-frame time logic
         // --------------------
         float currentFrame = glfwGetTime();
@@ -162,8 +162,8 @@ int main()
 
         // don't forget to enable shader before setting uniforms
         ourShader.use();
-        loadModel(ourShader, King, true, 0.0f, 0.0f, 0.0f, 0.0f);
-        loadModel(ourShader, Queen, false, 0.0f, 1.0f, 0.0f, 0.0f);
+        loadModel(ourShader, list_model[0], true, 0.0f, 0.0f, 0.0f, 0.0f);
+        loadModel(ourShader, list_model[1], false, 0.0f, 1.0f, 0.0f, 0.0f);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -180,8 +180,7 @@ int main()
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react
 // accordingly
 // ---------------------------------------------------------------------------------------------------------
-void processInput(GLFWwindow *window)
-{
+void processInput(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
@@ -197,8 +196,7 @@ void processInput(GLFWwindow *window)
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
-void framebuffer_size_callback(GLFWwindow *window, int width, int height)
-{
+void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     // make sure the viewport matches the new window dimensions; note that width and
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
@@ -206,17 +204,15 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
-void mouse_callback(GLFWwindow *window, double xpos, double ypos)
-{
-    if (firstMouse)
-    {
+void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
+    if (firstMouse) {
         lastX = xpos;
         lastY = ypos;
         firstMouse = false;
     }
 
     float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+    float yoffset = lastY - ypos;  // reversed since y-coordinates go from bottom to top
 
     lastX = xpos;
     lastY = ypos;
@@ -226,7 +222,6 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
-void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
-{
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
     camera.ProcessMouseScroll(yoffset);
 }
