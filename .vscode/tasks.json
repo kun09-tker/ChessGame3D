@@ -9,7 +9,7 @@
                 "-o",
                 "${fileDirname}\\${fileBasenameNoExtension}.exe",
                 "${fileDirname}\\${fileBasenameNoExtension}.cpp",
-                "F:\\Learning\\DHMT\\ChessGame3D\\OpenGL\\src\\glad.c",
+                "src\\glad.c",
                 "-lm",
                 "-Wall",
                 "-lopengl32",
