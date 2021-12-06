@@ -116,7 +116,7 @@ int main() {
     }
 
     // tell stb_image.h to flip loaded texture's on the y-axis (before loading model).
-    stbi_set_flip_vertically_on_load(true);
+    // stbi_set_flip_vertically_on_load(true);
 
     // configure global opengl state
     // -----------------------------
@@ -134,6 +134,7 @@ int main() {
     list_model.push_back(Model("models/Pawn.obj"));
     list_model.push_back(Model("models/King.obj"));
     list_model.push_back(Model("models/Rook.obj"));
+    list_model.push_back(Model("models/Board.obj"));
     // Model ourModel("backpack.obj");
 
     // lighting
@@ -162,8 +163,8 @@ int main() {
 
         // don't forget to enable shader before setting uniforms
         ourShader.use();
-        loadModel(ourShader, list_model[0], true, 0.0f, 0.0f, 0.0f, 0.0f);
-        loadModel(ourShader, list_model[1], false, 0.0f, 1.0f, 0.0f, 0.0f);
+        loadModel(ourShader, list_model[0], false, 1.0f, 0.0f, 0.0f, 0.0f);
+        loadModel(ourShader, list_model[1], false, 0.0f, -0.56f, 0.005f, 0.2f);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
