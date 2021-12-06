@@ -5,10 +5,10 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include<glm/gtc/type_ptr.hpp>
-#include<glm/gtx/rotate_vector.hpp>
-#include<glm/gtx/vector_angle.hpp>
-#include<iostream>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/rotate_vector.hpp>
+#include <glm/gtx/vector_angle.hpp>
+#include <iostream>
 #include <vector>
 
 // Defines several possible options for camera movement. Used as abstraction to stay away from
@@ -24,9 +24,8 @@ const float ZOOM = 45.0f;
 const unsigned int width = 900;
 const unsigned int height = 900;
 float sensitivity = 100.0f;
-double mX=width/2, mY=height/2;
+double mX = width / 2, mY = height / 2;
 bool after_mouse_move = false;
-
 
 // An abstract camera class that processes input and calculates the corresponding Euler Angles,
 // Vectors and Matrices for use in OpenGL
@@ -46,7 +45,7 @@ public:
     float MouseSensitivity;
     float Zoom;
     bool firstClick;
-    void Inputs(GLFWwindow *window);
+    void Inputs(GLFWwindow* window);
     // constructor with vectors
     Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f),
            glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH)
@@ -153,52 +152,40 @@ void Camera::Inputs(GLFWwindow* window)
     // Handles key inputs
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-    {
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         Position += speed * Front;
     }
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-    {
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
         Position += speed * -glm::normalize(glm::cross(Front, Up));
     }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-    {
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
         Position += speed * -Front;
     }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-    {
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
         Position += speed * glm::normalize(glm::cross(Front, Up));
     }
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-    {
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
         Position += speed * Up;
     }
-    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
-    {
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
         Position += speed * -Up;
     }
-    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-    {
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
         speed = 0.4f;
-    }
-    else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
-    {
+    } else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE) {
         speed = 0.1f;
     }
 
-
     // Handles mouse inputs
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-    {
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
         // Hides mouse cursor
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-        if(!after_mouse_move){
+        if (!after_mouse_move) {
             glfwGetCursorPos(window, &mX, &mY);
             after_mouse_move = true;
         }
         // Prevents camera from jumping on the first click
-        if (firstClick)
-        {
+        if (firstClick) {
             glfwSetCursorPos(window, (width / 2), (height / 2));
             firstClick = false;
         }
@@ -209,17 +196,17 @@ void Camera::Inputs(GLFWwindow* window)
         // Fetches the coordinates of the cursor
         glfwGetCursorPos(window, &mouseX, &mouseY);
 
-        // Normalizes and shifts the coordinates of the cursor such that they begin in the middle of the screen
-        // and then "transforms" them into degrees 
+        // Normalizes and shifts the coordinates of the cursor such that they begin in the middle of
+        // the screen and then "transforms" them into degrees
         float rotX = sensitivity * (float)(mouseY - (height / 2)) / height;
         float rotY = sensitivity * (float)(mouseX - (width / 2)) / width;
 
         // Calculates upcoming vertical change in the Front
-        glm::vec3 newFront = glm::rotate(Front, glm::radians(-rotX), glm::normalize(glm::cross(Front, Up)));
+        glm::vec3 newFront =
+            glm::rotate(Front, glm::radians(-rotX), glm::normalize(glm::cross(Front, Up)));
 
         // Decides whether or not the next vertical Front is legal or not
-        if (abs(glm::angle(newFront, Up) - glm::radians(90.0f)) <= glm::radians(85.0f))
-        {
+        if (abs(glm::angle(newFront, Up) - glm::radians(90.0f)) <= glm::radians(85.0f)) {
             Front = newFront;
         }
 
@@ -227,12 +214,10 @@ void Camera::Inputs(GLFWwindow* window)
         Front = glm::rotate(Front, glm::radians(-rotY), Up);
 
         // Sets mouse cursor to the middle of the screen so that it doesn't end up roaming around
-        
+
         glfwSetCursorPos(window, (width / 2), (height / 2));
-    }
-    else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
-    {
-        if(after_mouse_move) {
+    } else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
+        if (after_mouse_move) {
             glfwSetCursorPos(window, mX, mY);
             after_mouse_move = false;
         }

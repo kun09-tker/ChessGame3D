@@ -38,7 +38,7 @@ glm::vec3 backGround = glm::vec3(0.72f, 0.51f, 1.0f);
 float currentTime = 0.0f;
 
 // lighting
-glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+glm::vec3 lightPos(1.2f, 2.0f, 2.0f);
 
 // Show FPS
 void setTitleFPS(GLFWwindow *window, int nbFrames);
@@ -117,6 +117,7 @@ int main() {
     listModel.push_back(Model("./models/King.obj"));
     listModel.push_back(Model("./models/Queen.obj"));
     listModel.push_back(Model("./models/Pawn.obj"));
+    listModel.push_back(Model("./models/Plate.obj"));
     // Model ourModel("backpack.obj");
 
     // Set Object
@@ -124,18 +125,18 @@ int main() {
 
     // Set Chess for Player 1
     // Vị trí khởi đầu
-    float baseX = -1.32f, baseY = -.005f, baseZ = 1.32f;
-    float rangeObject = 0.38f;  // Khoảng cách giữa các quân cờ (chỉnh theo ý muốn)
+    float baseX = -1.32f, baseY = -.006f, baseZ = 1.32f;
+    float rangeObject = 0.377f;  // Khoảng cách giữa các quân cờ (chỉnh theo ý muốn)
     int indexModel;
     Object obj;
     for (int index = 0; index < 8; ++index) {
         // id, model, checkTexture, position, isFirstPlayer, canSelect
-        // Id của cờ player1 từ 65 -> 65 + 8
+        // Id của cờ player1 từ 66 -> 66 + 8
         // Ánh xạ index thành model
         // 0, 1, 2, 3, 4 -> 1, 2, 3, 4, 5
         // 5, 6, 7 => 3, 2, 1
         // 8 - 15 -> 7
-        int id = index + 65;
+        int id = index + 66;
         if (index >= 8)
             indexModel = 6;
         else if (index <= 4)
@@ -150,11 +151,11 @@ int main() {
     }
 
     // Set Chess for Player 2
-    baseX = 1.34f, baseY = -.005f, baseZ = -1.34f;
+    baseX = 1.34f, baseY = -.006f, baseZ = -1.34f;
     for (int index = 0; index < 8; ++index) {
         // id, model, checkTexture, position, isFirstPlayer, canSelect
-        // Id của cờ player1 từ 65 + 8 -> 65 + 16
-        int id = index + 65 + 8;
+        // Id của cờ player1 từ 66 + 8 -> 66 + 16
+        int id = index + 66 + 8;
         if (index >= 8)
             indexModel = 6;
         else if (index <= 4)
@@ -222,6 +223,34 @@ int main() {
         ourShader.setMat4("projection", projection);
         ourShader.setMat4("view", view);
 
+        // Lát thẳng ô cờ
+        glm::mat4 model;
+        float scale = 0.1885f;
+        float distance = 0.377f;  // khoảng cách 2 ô
+        for (int index = 0; index < 64; ++index) {
+            // gắn id cho ô cờ, bắt đầu từ 1 -> 64
+            glStencilFunc(GL_ALWAYS, index + 1, 0xFF);
+            glStencilMask(0xFF);
+
+            // render the loaded model
+            ourShader.setVec3("objectColor", (index + index / 8) % 2
+                                                 ? glm::vec3(1.0f, 1.0f, 1.0f)
+                                                 : glm::vec3(0.682f, 0.263f, 0.118f));
+            // công thức đổ màu (index + index / 8) % 2 màu trắng, ngược lại đen
+            // màu ánh sáng
+            ourShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+            // vị trí
+            ourShader.setVec3("lightPos", lightPos);
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, glm::vec3(-1.32f + index % 8 * distance, 0.001f,
+                                                    1.317f - index / 8 * distance));
+            // translate it down so it's at the center of the scene
+            model = glm::scale(model, glm::vec3(scale, scale, scale));
+            // it's a bit too big for our scene, so scale it down
+            ourShader.setMat4("model", model);
+            listModel[7].Draw(ourShader);  // listModel[7] Plate
+        }
+
         for (auto &object : listObject) object.render(ourShader, stencilShader, lightPos);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse
@@ -280,15 +309,18 @@ void processSelection(int xx, int yy) {
 
     idSelected = res;
     std::cout << "Clicked on:" << res << std::endl;
-    if (res >= 65) {
-        listObject[idSelected - 65 + 1].setSelected(false);
-        listObject[res - 65 + 1].setSelected(true);
-    }
+    if (res >= 66) {
+        listObject[idSelected - 66 + 1].setSelected(false);
+        listObject[res - 66 + 1].setSelected(true);
+    } else if (res >= 1) {
+        // std::cout << "Clicked on:" << res << std::endl;
+        res--;
+        int xLocation = res % 8 + 1, yLocation = res / 8 + 1;
+        // x Là ô chũ, y là ô số
 
-    unsigned char colorRGBA[4];
-    glReadPixels(xx * x_scale, viewport[3] - yy * y_scale, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE,
-                 &colorRGBA);
-    std::cout << "color R: " << (int)colorRGBA[0] << std::endl;
+        std::cout << "Ô: ("
+                  << "abcdefgh"[xLocation - 1] << ", " << yLocation << ")\n";
+    }
 }
 
 void setTitleFPS(GLFWwindow *window, int nbFrames) {
