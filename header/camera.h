@@ -149,7 +149,7 @@ private:
 };
 void Camera::Inputs(GLFWwindow* window)
 {
-    float speed = 0.01f;
+    float speed = 0.05f;
     // Handles key inputs
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
