@@ -44,8 +44,8 @@ glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 vector<Model> list_model;
 
 // Hàm load model
-void loadModel(Shader &Program, Model &model, bool checkfirstPlayer, float checkTexture, float x,
-               float y, float z) {
+void loadModel(Shader &Program, Model &model, bool checkfirstPlayer, float checkTexture, float x, float y, float z)
+{
     /*
     Program là Shader
     model là model dùng để load lên
@@ -53,11 +53,21 @@ void loadModel(Shader &Program, Model &model, bool checkfirstPlayer, float check
     checkTexture dùng để biết file có texture để load cho đúng
     x,y,z là tọa độ
     */
-    if (checkfirstPlayer) {
+    glm::mat4 model1 = glm::mat4(1.0f);
+    model1 = glm::translate(model1, glm::vec3(x, y, z));            // translate it down so it's at the center of the scene
+    model1 = glm::scale(model1, glm::vec3(0.005f, 0.005f, 0.005f)); // it's a bit too big for our scene, so scale it down
+
+    if (checkfirstPlayer)
+    {
         Program.setVec3("objectColor", firstPlayer[0], firstPlayer[1], firstPlayer[2]);
-    } else {
+        model1 = glm::rotate(model1, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    }
+    else
+    {
         Program.setVec3("objectColor", secondPlayer[0], secondPlayer[1], secondPlayer[2]);
     }
+
+    Program.setMat4("model", model1);
     Program.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
     Program.setVec3("lightPos", lightPos);
     Program.setFloat("Texture", checkTexture);
@@ -70,17 +80,11 @@ void loadModel(Shader &Program, Model &model, bool checkfirstPlayer, float check
     Program.setMat4("view", view);
 
     // render the loaded model
-    glm::mat4 model1 = glm::mat4(1.0f);
-    model1 = glm::translate(
-        model1, glm::vec3(x, y, z));  // translate it down so it's at the center of the scene
-    model1 = glm::scale(
-        model1,
-        glm::vec3(0.005f, 0.005f, 0.005f));  // it's a bit too big for our scene, so scale it down
-    Program.setMat4("model", model1);
     model.Draw(Program);
 }
 
-int main() {
+int main()
+{
     // glfw: initialize and configure
     // ------------------------------
     glfwInit();
@@ -95,7 +99,8 @@ int main() {
     // glfw tạo cửa sổ
     // --------------------
     GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Bàn cờ", NULL, NULL);
-    if (window == NULL) {
+    if (window == NULL)
+    {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
         return -1;
@@ -106,7 +111,8 @@ int main() {
 
     // load tất cả hàm của glad
     // ---------------------------------------
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
@@ -124,13 +130,13 @@ int main() {
     // load models
     // -----------
     Shader ourShader("1.model_loading.vs", "1.model_loading.fs");
+    list_model.push_back(Model("./models/Board.obj"));
+    list_model.push_back(Model("./models/Rook.obj"));
     list_model.push_back(Model("./models/Knight.obj"));
-    list_model.push_back(Model("./models/Queen.obj"));
     list_model.push_back(Model("./models/Bishop.obj"));
     list_model.push_back(Model("./models/King.obj"));
+    list_model.push_back(Model("./models/Queen.obj"));
     list_model.push_back(Model("./models/Pawn.obj"));
-    list_model.push_back(Model("./models/Rook.obj"));
-    list_model.push_back(Model("./models/Board.obj"));
     // Model ourModel("backpack.obj");
 
     // lighting
@@ -140,7 +146,8 @@ int main() {
 
     // render loop
     // -----------
-    while (!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(window))
+    {
         // per-frame time logic
         // --------------------
         float currentFrame = glfwGetTime();
@@ -156,11 +163,46 @@ int main() {
         // glClearColor(0.98f, 1.0f, 0.88f, 1.0f);
         glClearColor(backGround[0], backGround[1], backGround[2], 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
         // don't forget to enable shader before setting uniforms
         ourShader.use();
-        loadModel(ourShader, list_model[6], false, 1.0f, 0.0f, 0.0f, 0.0f);
-        loadModel(ourShader, list_model[1], false, 0.0f, -0.56f, 0.005f, 0.2f);
+        loadModel(ourShader, list_model[0], false, 1.0f, 0.0f, 0.0f, 0.0f);
+
+        // loadModel(ourShader, list_model[1], false, 0.0f, -0.56f, 0.005f, 0.2f);
+        // First Player
+        loadModel(ourShader, list_model[1], false, 0.0f, -1.32f, 0.005f, 1.32f);
+        loadModel(ourShader, list_model[2], false, 0.0f, -0.94f, 0.005f, 1.32f);
+        loadModel(ourShader, list_model[3], false, 0.0f, -0.56f, 0.005f, 1.32f);
+        loadModel(ourShader, list_model[4], false, 0.0f, -0.18f, 0.005f, 1.32f);
+        loadModel(ourShader, list_model[5], false, 0.0f, 0.2f, 0.005f, 1.32f);
+        loadModel(ourShader, list_model[3], false, 0.0f, 0.58f, 0.005f, 1.32f);
+        loadModel(ourShader, list_model[2], false, 0.0f, 0.96f, 0.005f, 1.32f);
+        loadModel(ourShader, list_model[1], false, 0.0f, 1.34f, 0.005f, 1.32f);
+        loadModel(ourShader, list_model[6], false, 0.0f, -1.32f, 0.005f, 0.94f);
+        loadModel(ourShader, list_model[6], false, 0.0f, -0.94f, 0.005f, 0.94f);
+        loadModel(ourShader, list_model[6], false, 0.0f, -0.56f, 0.005f, 0.94f);
+        loadModel(ourShader, list_model[6], false, 0.0f, -0.18f, 0.005f, 0.94f);
+        loadModel(ourShader, list_model[6], false, 0.0f, 0.2f, 0.005f, 0.94f);
+        loadModel(ourShader, list_model[6], false, 0.0f, 0.58f, 0.005f, 0.94f);
+        loadModel(ourShader, list_model[6], false, 0.0f, 0.96f, 0.005f, 0.94f);
+        loadModel(ourShader, list_model[6], false, 0.0f, 1.34f, 0.005f, 0.94f);
+
+        // Second Player
+        loadModel(ourShader, list_model[1], true, 0.0f, -1.32f, 0.005f, -1.34f);
+        loadModel(ourShader, list_model[2], true, 0.0f, -0.94f, 0.005f, -1.34f);
+        loadModel(ourShader, list_model[3], true, 0.0f, -0.56f, 0.005f, -1.34f);
+        loadModel(ourShader, list_model[4], true, 0.0f, -0.18f, 0.005f, -1.34f);
+        loadModel(ourShader, list_model[5], true, 0.0f, 0.2f, 0.005f, -1.34f);
+        loadModel(ourShader, list_model[3], true, 0.0f, 0.58f, 0.005f, -1.34f);
+        loadModel(ourShader, list_model[2], true, 0.0f, 0.96f, 0.005f, -1.34f);
+        loadModel(ourShader, list_model[1], true, 0.0f, 1.34f, 0.005f, -1.34f);
+        loadModel(ourShader, list_model[6], true, 0.0f, -1.32f, 0.005f, -0.96f);
+        loadModel(ourShader, list_model[6], true, 0.0f, -0.94f, 0.005f, -0.96f);
+        loadModel(ourShader, list_model[6], true, 0.0f, -0.56f, 0.005f, -0.96f);
+        loadModel(ourShader, list_model[6], true, 0.0f, -0.18f, 0.005f, -0.96f);
+        loadModel(ourShader, list_model[6], true, 0.0f, 0.2f, 0.005f, -0.96f);
+        loadModel(ourShader, list_model[6], true, 0.0f, 0.58f, 0.005f, -0.96f);
+        loadModel(ourShader, list_model[6], true, 0.0f, 0.96f, 0.005f, -0.96f);
+        loadModel(ourShader, list_model[6], true, 0.0f, 1.34f, 0.005f, -0.96f);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -180,7 +222,8 @@ int main() {
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
-void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+void framebuffer_size_callback(GLFWwindow *window, int width, int height)
+{
     // make sure the viewport matches the new window dimensions; note that width and
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
@@ -188,6 +231,7 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
-void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
+{
     camera.ProcessMouseScroll(yoffset);
 }
