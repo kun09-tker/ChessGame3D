@@ -36,6 +36,8 @@ public:
     }
     ~Object() {}
 
+    void setPosition(glm::vec3 position) { this->position = position; }
+
     Model getModel() { return *model; }
 
     int getId() { return id; }
