@@ -80,6 +80,10 @@ public:
         // translate it down so it's at the center of the scene
         model = glm::scale(model, glm::vec3(0.005f, 0.005f, 0.005f));
         // it's a bit too big for our scene, so scale it down
+        // Xoay nếu là cờ của người chơi 2
+        if (this->canSelect && this->isFirstPlayer)
+            model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
         ourShader.setMat4("model", model);
         this->model->Draw(ourShader);
 
