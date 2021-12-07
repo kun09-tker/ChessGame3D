@@ -48,7 +48,7 @@ public:
     void setSelected(bool selected) { isSelected = selected; }
     bool getSelected() { return isSelected; }
 
-    void render(Shader ourShader, Shader stencilShader, glm::vec3 lightPos) {
+    void render(Shader ourShader, Shader stencilShader, glm::vec3 lightPos, bool player2 = false) {
         /*
         Program là Shader
         model là model dùng để load lên

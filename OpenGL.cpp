@@ -133,7 +133,7 @@ int main() {
     Object obj;
     for (int index = 0; index < 16; ++index) {
         // id, model, checkTexture, position, isFirstPlayer, canSelect
-        // Id của cờ player1 từ 66 -> 66 + 8
+        // Id của cờ player1 từ 66 -> 66 + 16
         // Ánh xạ index thành model
         // 0, 1, 2, 3, 4 -> 1, 2, 3, 4, 5
         // 5, 6, 7 => 3, 2, 1
@@ -260,7 +260,7 @@ int main() {
         for (auto &object : listObjectPlayer1) object.render(ourShader, stencilShader, lightPos);
 
         // Vẽ cờ cho người 2chơi 2
-        for (auto &object : listObjectPlayer2) object.render(ourShader, stencilShader, lightPos);
+        for (auto &object : listObjectPlayer2) object.render(ourShader, stencilShader, lightPos, true);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse
         // moved etc.)
