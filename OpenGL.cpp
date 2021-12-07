@@ -50,7 +50,9 @@ int idSelected;
 vector<Model> listModel;
 
 // Danh sách tất cả đối tượng
-vector<Object> listObject;
+vector<Object> listObjectPlayer1, listObjectPlayer2;
+// Đối tượng bảng
+Object board;
 
 // 4 biến hỗ trợ selection
 int window_width = SCR_WIDTH, window_height = SCR_HEIGHT;
@@ -121,7 +123,7 @@ int main() {
     // Model ourModel("backpack.obj");
 
     // Set Object
-    listObject.push_back(Object(0, listModel[0], true, glm::vec3(0.0f, 0.0f, 0.0f), false, false));
+    board = Object(0, listModel[0], true, glm::vec3(0.0f, 0.0f, 0.0f), false, false);
 
     // Set Chess for Player 1
     // Vị trí khởi đầu
@@ -143,9 +145,9 @@ int main() {
             indexModel = index + 1;
         else
             indexModel = 8 - index;
-        listObject.push_back(Object(
+        listObjectPlayer1.push_back(Object(
             id, listModel[indexModel], false,
-            glm::vec3(baseX + index % 8 * rangeObject, baseY - index / 8 * rangeObject, baseZ),
+            glm::vec3(baseX + index % 8 * rangeObject, baseY, baseZ - index / 8 * rangeObject),
             false, true));
         // listObject.back().setSelected(true);
     }
@@ -162,9 +164,9 @@ int main() {
             indexModel = index + 1;
         else
             indexModel = 8 - index;
-        listObject.push_back(Object(
+        listObjectPlayer2.push_back(Object(
             id, listModel[indexModel], false,
-            glm::vec3(baseX - index % 8 * rangeObject, baseY + index / 8 * rangeObject, baseZ),
+            glm::vec3(baseX - index % 8 * rangeObject, baseY, baseZ + index / 8 * rangeObject),
             true, true));
     }
 
@@ -251,7 +253,14 @@ int main() {
             listModel[7].Draw(ourShader);  // listModel[7] Plate
         }
 
-        for (auto &object : listObject) object.render(ourShader, stencilShader, lightPos);
+        // Vẽ bảng
+        board.render(ourShader, stencilShader, lightPos);
+
+        // Vẽ cờ cho người 1chơi 1
+        for (auto &object : listObjectPlayer1) object.render(ourShader, stencilShader, lightPos);
+
+        // Vẽ cờ cho người 2chơi 2
+        for (auto &object : listObjectPlayer2) object.render(ourShader, stencilShader, lightPos);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse
         // moved etc.)
@@ -310,8 +319,12 @@ void processSelection(int xx, int yy) {
     idSelected = res;
     std::cout << "Clicked on:" << res << std::endl;
     if (res >= 66) {
-        listObject[idSelected - 66 + 1].setSelected(false);
-        listObject[res - 66 + 1].setSelected(true);
+        if (res <= 66 + 7) {
+        }
+        // listObject[idSelected - 66 + 1].setSelected(false);
+        else {
+        }
+        // listObsdwject[res - 66 + 1].setSelected(true);
     } else if (res >= 1) {
         // std::cout << "Clicked on:" << res << std::endl;
         res--;
