@@ -190,7 +190,7 @@ int main() {
             previousTime = currentTime;
         }
 
-        // input
+        // Camera inputs
         // -----
         camera.Inputs(window);
 
