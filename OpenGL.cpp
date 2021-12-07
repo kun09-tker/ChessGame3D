@@ -212,6 +212,11 @@ int main() {
         ourShader.setMat4("projection", projection);
         ourShader.setMat4("view", view);
 
+        // set uniforms
+        stencilShader.use();
+        stencilShader.setMat4("view", view);
+        stencilShader.setMat4("projection", projection);
+
         for (auto &object : listObject)
             object.render(ourShader, stencilShader, projection, view, lightPos);
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse
@@ -274,6 +279,11 @@ void processSelection(int xx, int yy) {
         listObject[idSelected - 65 + 1].setSelected(false);
         listObject[res - 65 + 1].setSelected(true);
     }
+
+    unsigned char colorRGBA[4];
+    glReadPixels(xx * x_scale, viewport[3] - yy * y_scale, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE,
+                 &colorRGBA);
+    std::cout << "color R: " << (int)colorRGBA[0] << std::endl;
 }
 
 void setTitleFPS(GLFWwindow *window, int nbFrames) {

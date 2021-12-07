@@ -42,8 +42,7 @@ public:
     void setSelected(bool selected) { isSelected = selected; }
     bool getSelected() { return isSelected; }
 
-    void render(Shader ourShader, Shader stencilShader, glm::mat4 projection, glm::mat4 view,
-                glm::vec3 lightPos) {
+    void render(Shader ourShader, Shader stencilShader, glm::vec3 lightPos) {
         /*
         Program là Shader
         model là model dùng để load lên
@@ -51,11 +50,6 @@ public:
         checkTexture dùng để biết file có texture để load cho đúng
         x,y,z là tọa độ
         */
-
-        // set uniforms
-        stencilShader.use();
-        stencilShader.setMat4("view", view);
-        stencilShader.setMat4("projection", projection);
 
         // don't forget to enable shader before setting uniforms
         ourShader.use();

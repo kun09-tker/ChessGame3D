@@ -35,11 +35,13 @@ bool firstMouse = true;
 glm::vec3 backGround = glm::vec3(0.72f, 0.51f, 1.0f);
 
 // timing
-float deltaTime = 0.0f;
-float lastFrame = 0.0f;
+float currentTime = 0.0f;
 
 // lighting
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+
+// Show FPS
+void setTitleFPS(GLFWwindow *window, int nbFrames);
 
 // Đối tượng đang chọn
 int idSelected;
@@ -121,13 +123,18 @@ int main() {
     listObject.push_back(Object(0, listModel[0], true, glm::vec3(0.0f, 0.0f, 0.0f), false, false));
 
     // Set Chess for Player 1
+    // Vị trí khởi đầu
     float baseX = -1.32f, baseY = -.005f, baseZ = 1.32f;
-    float rangeObject = 0.38f;
+    float rangeObject = 0.38f;  // Khoảng cách giữa các quân cờ (chỉnh theo ý muốn)
     int indexModel;
     Object obj;
     for (int index = 0; index < 8; ++index) {
         // id, model, checkTexture, position, isFirstPlayer, canSelect
         // Id của cờ player1 từ 65 -> 65 + 8
+        // Ánh xạ index thành model
+        // 0, 1, 2, 3, 4 -> 1, 2, 3, 4, 5
+        // 5, 6, 7 => 3, 2, 1
+        // 8 - 15 -> 7
         int id = index + 65;
         if (index >= 8)
             indexModel = 6;
@@ -168,12 +175,20 @@ int main() {
 
     // render loop
     // -----------
+
+    // init Time
+    double previousTime = glfwGetTime();
+    int frameCount = 0;
     while (!glfwWindowShouldClose(window)) {
         // per-frame time logic
         // --------------------
-        float currentFrame = glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
+        float currentTime = glfwGetTime();
+        frameCount++;
+        if (currentTime - previousTime >= 1.0) {
+            setTitleFPS(window, frameCount);
+            frameCount = 0;
+            previousTime = currentTime;
+        }
 
         // input
         // -----
@@ -197,6 +212,11 @@ int main() {
         ourShader.setMat4("projection", projection);
         ourShader.setMat4("view", view);
 
+        // set uniforms
+        stencilShader.use();
+        stencilShader.setMat4("view", view);
+        stencilShader.setMat4("projection", projection);
+
         for (auto &object : listObject)
             object.render(ourShader, stencilShader, projection, view, lightPos);
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse
@@ -212,35 +232,6 @@ int main() {
     return 0;
 }
 
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react
-// accordingly
-// ---------------------------------------------------------------------------------------------------------
-// void processInput(GLFWwindow *window) {
-//     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-//         glfwSetWindowShouldClose(window, true);
-
-//     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-//         camera.ProcessKeyboard(FORWARD, deltaTime);
-//     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-//         camera.ProcessKeyboard(BACKWARD, deltaTime);
-//     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-//         camera.ProcessKeyboard(LEFT, deltaTime);
-//     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-//         camera.ProcessKeyboard(RIGHT, deltaTime);
-
-//     // Nếu giữ space thì tắt move camera ngước lại thì bật
-//     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-//         camera.setMoveCamera(false);
-//         // Hiển thị con trỏ chuột
-//         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-//     }
-//     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
-//         camera.setMoveCamera(true);
-//         // Tắt hiển thị con trỏ chuột
-//         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-//     }
-// }
-
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
@@ -253,26 +244,6 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     window_width = width;
     window_height = height;
 }
-
-// glfw: whenever the mouse moves, this callback is called
-// -------------------------------------------------------
-// void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
-//     if (firstMouse) {
-//         lastX = xpos;
-//         lastY = ypos;
-//         firstMouse = false;
-//     }
-
-//     float xoffset = xpos - lastX;
-//     float yoffset = lastY - ypos;  // reversed since y-coordinates go from bottom to top
-
-//     lastX = xpos;
-//     lastY = ypos;
-
-//     // Nếu cho phép xoay thì mới xoay camera
-//     if (camera.getMoveCamera())
-//         camera.ProcessMouseMovement(xoffset, yoffset);
-// }
 
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
     double x, y;
@@ -309,27 +280,13 @@ void processSelection(int xx, int yy) {
         listObject[res - 65 + 1].setSelected(true);
     }
 
-    // if (selected < 100 && selected >= 0) {
-    //     if (scene.selected() && ((game.getPlayerId() == 1 && selected > 16) ||
-    //                              (game.getPlayerId() == 2 && selected < 17)))
-    //         game.tryMovement(scene.getSelected() + 1, selected + 1);
-    //     else if ((game.getPlayerId() == 1 && selected <= 16) ||
-    //              (game.getPlayerId() == 2 && selected > 16))
-    //         scene.selectModel(selected);
-    // if (selected >= 100) {
-    //     selected -= 100;
-    //     int caseY = selected % 8;
-    //     int caseX = 7 - (selected / 8);
-
-    //     std::cout << "cell:" << caseX << " " << caseY << std::endl;
-
-    //     // if (scene.selected())
-    //     //     game.tryMovement(scene.getSelected() + 1, caseX, caseY);
-    // }
+    unsigned char colorRGBA[4];
+    glReadPixels(xx * x_scale, viewport[3] - yy * y_scale, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE,
+                 &colorRGBA);
+    std::cout << "color R: " << (int)colorRGBA[0] << std::endl;
 }
 
-// void setTitleFps() {
-//     std::string title = "Chess 3D - FPS: " + std::to_string(nbFrames) + " - Joueur " +
-//                         std::to_string(game.getPlayerId());
-//     glfwSetWindowTitle(window, title.c_str());
-// }
+void setTitleFPS(GLFWwindow *window, int nbFrames) {
+    std::string title = "Chess 3D - FPS: " + std::to_string(nbFrames);
+    glfwSetWindowTitle(window, title.c_str());
+}
