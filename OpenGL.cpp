@@ -319,7 +319,7 @@ void processSelection(int xx, int yy) {
     idSelected = res;
     std::cout << "Clicked on:" << res << std::endl;
     if (res >= 66) {
-        if (res <= 66 + 7)
+        if (res <= 66 + 15)
             listObjectPlayer1[idSelected - 66].setSelected(true);
         //
         else

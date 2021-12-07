@@ -15,10 +15,16 @@ private:
     int id;
     Model *model;
     bool checkTexture;
+    // Tọa độ thế giới
     glm::vec3 position;
     bool isFirstPlayer;
     bool canSelect;
     bool isSelected = false;
+
+    // Toạ độ trong bàn cờ
+    int posX, int posY;
+    // Tọa độ có thể di chuyển đến
+    std::vector<std::vector<int> > availableMovements;
 
 public:
     Object(){};
@@ -37,9 +43,7 @@ public:
     ~Object() {}
 
     void setPosition(glm::vec3 position) { this->position = position; }
-
     Model getModel() { return *model; }
-
     int getId() { return id; }
     void setSelected(bool selected) { isSelected = selected; }
     bool getSelected() { return isSelected; }
@@ -80,10 +84,10 @@ public:
         // translate it down so it's at the center of the scene
         model = glm::scale(model, glm::vec3(0.005f, 0.005f, 0.005f));
         // it's a bit too big for our scene, so scale it down
-        if(player2){
+        // Xoay nếu là cờ của người chơi 2
+        if (this->canSelect && this->isFirstPlayer)
             model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        }
-        // If player2 is true, rotate 180 degree
+
         ourShader.setMat4("model", model);
         this->model->Draw(ourShader);
 
@@ -118,4 +122,7 @@ public:
         glStencilFunc(GL_ALWAYS, 0, 0xFF);
         glEnable(GL_DEPTH_TEST);
     }
-};
+
+    // Tính toán các tọa độ có thể đi đến
+    virtual void computeAvailableMovements(std::vector<Object *> &player,
+                                           std::vector<Object *> &opponent){};
