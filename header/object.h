@@ -64,10 +64,6 @@ public:
         // Texture
         ourShader.setFloat("Texture", this->checkTexture);
 
-        // Set view matri/x
-        ourShader.setMat4("projection", projection);
-        ourShader.setMat4("view", view);
-
         // draw board as normal, but don't write the board to the stencil buffer, we only care
         // about the chess. We set its mask to 0x00 to not write to the stencil buffer.
         if (this->canSelect) {

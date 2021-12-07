@@ -217,8 +217,13 @@ int main() {
         stencilShader.setMat4("view", view);
         stencilShader.setMat4("projection", projection);
 
-        for (auto &object : listObject)
-            object.render(ourShader, stencilShader, projection, view, lightPos);
+        // Set view matrix
+        ourShader.use();
+        ourShader.setMat4("projection", projection);
+        ourShader.setMat4("view", view);
+
+        for (auto &object : listObject) object.render(ourShader, stencilShader, lightPos);
+
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse
         // moved etc.)
         // -------------------------------------------------------------------------------
