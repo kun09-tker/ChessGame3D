@@ -59,6 +59,9 @@ Object board;
 int window_width = SCR_WIDTH, window_height = SCR_HEIGHT;
 int framebuffer_width, framebuffer_height;
 
+// Selection
+int idSelecting = 0;
+
 int main() {
     // glfw: initialize and configure
     // ------------------------------
@@ -317,14 +320,38 @@ void processSelection(int xx, int yy) {
     glReadPixels(xx * x_scale, viewport[3] - yy * y_scale, 1, 1, GL_STENCIL_INDEX, GL_UNSIGNED_INT,
                  &res);
 
-    idSelected = res;
+    idSelected = res;        
     std::cout << "Clicked on:" << res << std::endl;
+    if(res==0){
+        idSelected = idSelecting;
+        res = idSelecting;
+    }
     if (res >= 66) {
-        if (res <= 66 + 15)
+        std::cout << "idSelecting = "<<idSelecting<<" selected: "<<idSelected<<std::endl;
+        if (res <= 66 + 15){
+            if(idSelecting == idSelected){
+                listObjectPlayer1[idSelected - 66].setSelected(false);
+                idSelecting = 0;
+                return;
+            }
+            else if(idSelecting != idSelected){
+                listObjectPlayer1[idSelecting - 66].setSelected(false);
+            }
             listObjectPlayer1[idSelected - 66].setSelected(true);
+            idSelecting = idSelected;
+        }
         //
-        else
+        else {
+            if(idSelecting == idSelected){
+                listObjectPlayer2[idSelected - 66 - 16].setSelected(false);
+                idSelecting = 0;
+                return;
+            }else if(idSelecting != idSelected){
+                listObjectPlayer2[idSelecting - 66 - 16].setSelected(false);
+            }
             listObjectPlayer2[idSelected - 66 - 16].setSelected(true);
+            idSelecting = idSelected;
+        }
         // listObsdwject[res - 66 + 1].setSelected(true);
     } else if (res >= 1) {
         // std::cout << "Clicked on:" << res << std::endl;
