@@ -50,7 +50,7 @@ void ruleSwapChess(Cell Board[8][8], vector<GLfloat> &Eat_bule, vector<GLfloat> 
                     int &x_down, int &y_down, 
                     GLfloat &shape,
                     map<string,bool> &pawn_en_passant, bool &castling,
-                    map<string,bool> &chess_move, bool &engame){
+                    map<string,bool> &chess_move){
     
     int tmp = 1;
     char player = Board[xcurrent][ycurrent].name[1];

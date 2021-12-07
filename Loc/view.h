@@ -2,6 +2,7 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 #include <math.h>
+#include <vector>
 
 #include <iostream>
 
@@ -11,6 +12,263 @@
 #define GL_BGR 0x80E0
 
 using namespace std;
+
+GLint King_view(char name_color) {
+    int color[3] = {0, 1, 1};
+    if (name_color == 'Y') {
+        color[0] = 1;
+        color[1] = 1;
+        color[2] = 0;
+    }
+
+    GLfloat g_base;
+    GLfloat g_onbase;
+    GLfloat g_back;
+    GLfloat g_neck;
+    GLfloat g_head;
+    GLfloat g_hair;
+    GLfloat g_flag;
+
+    g_base = MakeOctagon(1, 0.5);
+    g_onbase = MakeBox(1.5, 0.2, 1.5);
+    g_back = MakeFrustumShape(1.1, 0.35, 2.2);
+    g_neck = MakeOctagon(0.5, 0.5);
+    g_head = MakeFrustumShape(sqrt(1),0,2);
+    g_hair = MakeOctagon(0.25,0.5);
+    g_flag = MakeOctagon(0.15,0.7);
+
+    GLuint dp_list;
+
+    dp_list = glGenLists(1);
+    glNewList(dp_list, GL_COMPILE);
+    glPushMatrix();
+    SetMaterialColor(color[0], color[1], color[2], 1);
+    glTranslatef(0, 0, 0);
+    glRotatef(90, 1, 0, 0);
+    glCallList(g_base);
+
+    glRotatef(-90, 1, 0, 0);
+
+    SetMaterialColor(0.6, 0.6, 0.6, 1);
+    glTranslatef(-0.75, 0, 0.75);
+    glRotatef(-90, 1, 0, 0);
+    glCallList(g_onbase);
+
+    glRotatef(90, 1, 0, 0);
+    glTranslatef(0.75, 0, -0.75);
+
+    SetMaterialColor(color[0], color[1], color[2], 1);
+    glTranslatef(0, 0.2, 0);
+    glCallList(g_back);
+
+    glTranslatef(0, -0.2, 0);
+
+    SetMaterialColor(0.6, 0.6, 0.6, 1);
+    glTranslatef(0, 2, 0);
+    glRotatef(-90, 1, 0, 0);
+    glCallList(g_neck);
+
+    glRotatef(90, 1, 0, 0);
+    glTranslatef(0, -2, 0);
+
+    SetMaterialColor(color[0], color[1], color[2], 1);
+    glTranslatef(0, 3.2, 0);
+    glRotatef(180,1,0,0);
+    glCallList(g_head);
+
+    glRotatef(-180,1,0,0);
+    glTranslatef(0, -3.2, 0);
+
+    SetMaterialColor(0.6, 0.6, 0.6, 1);
+    glTranslatef(0, 3.3, 0);
+    glRotatef(90,1,0,0);
+    glCallList(g_hair);
+
+    glRotatef(-90,1,0,0);
+    glTranslatef(0, -3.3, 0);
+
+    SetMaterialColor(color[0], color[1], color[2], 1);
+    glTranslatef(0, 3.3, 0);
+    glRotatef(-90,1,0,0);
+    glCallList(g_flag);
+
+    glRotatef(90,1,0,0);
+    glTranslatef(0, -3.3, 0);
+
+    glTranslatef(0, 3.7, -0.3);
+    glCallList(g_flag);
+
+    glTranslatef(0, -3.7, 0.3);
+
+    glPopMatrix();
+    glEndList();
+
+    return dp_list;
+}
+
+GLint Queen_view(char name_color) {
+    int color[3] = {0, 1, 1};
+    if (name_color == 'Y') {
+        color[0] = 1;
+        color[1] = 1;
+        color[2] = 0;
+    }
+
+    GLfloat g_base;
+    GLfloat g_onbase;
+    GLfloat g_back;
+    GLfloat g_neck;
+    GLfloat g_head;
+    GLfloat g_hair;
+    GLfloat g_flag;
+
+    g_base = MakeOctagon(1, 0.5);
+    g_onbase = MakeBox(1.5, 0.2, 1.5);
+    g_back = MakeFrustumShape(1.1, 0.35, 2);
+    g_neck = MakeOctagon(0.5, 0.5);
+    g_head = MakeTruncatedCone(0.8,0.4,0.3);
+    g_hair = MakeSphere(0.4);
+    g_flag = MakeSphere(0.2);
+
+    GLuint dp_list;
+
+    dp_list = glGenLists(1);
+    glNewList(dp_list, GL_COMPILE);
+    glPushMatrix();
+    SetMaterialColor(color[0], color[1], color[2], 1);
+    glTranslatef(0, 0, 0);
+    glRotatef(90, 1, 0, 0);
+    glCallList(g_base);
+
+    glRotatef(-90, 1, 0, 0);
+
+    SetMaterialColor(0.6, 0.6, 0.6, 1);
+    glTranslatef(-0.75, 0, 0.75);
+    glRotatef(-90, 1, 0, 0);
+    glCallList(g_onbase);
+
+    glRotatef(90, 1, 0, 0);
+    glTranslatef(0.75, 0, -0.75);
+
+    SetMaterialColor(color[0], color[1], color[2], 1);
+    glTranslatef(0, 0.2, 0);
+    glCallList(g_back);
+
+    glTranslatef(0, -0.2, 0);
+
+    SetMaterialColor(0.6, 0.6, 0.6, 1);
+    glTranslatef(0, 1.8, 0);
+    glRotatef(-90, 1, 0, 0);
+    glCallList(g_neck);
+
+    glRotatef(90, 1, 0, 0);
+    glTranslatef(0, -1.8, 0);
+
+    SetMaterialColor(color[0], color[1], color[2], 1);
+    glTranslatef(0,2.7,0);
+    glRotatef(90,1,0,0);
+    glCallList(g_head);
+
+    glRotatef(-90,1,0,0);
+    glTranslatef(0,-2.7,0);
+
+    glTranslatef(0, 2.4, 0);
+    glCallList(g_hair);
+
+    glTranslatef(0, -2.4, 0);
+
+    SetMaterialColor(0.6, 0.6, 0.6, 1);
+    glTranslatef(0,2.7,0);
+    glCallList(g_flag);
+
+    glTranslatef(0,-2.7,0);
+
+    glPopMatrix();
+    glEndList();
+
+    return dp_list;
+}
+
+GLint Bishop_view(char name_color) {
+    int color[3] = {0, 1, 1};
+    if (name_color == 'Y') {
+        color[0] = 1;
+        color[1] = 1;
+        color[2] = 0;
+    }
+
+    GLfloat g_base;
+    GLfloat g_onbase;
+    GLfloat g_back;
+    GLfloat g_neck;
+    GLfloat g_head;
+    GLfloat g_hair;
+
+    g_base = MakeOctagon(1, 0.5);
+    g_onbase = MakeBox(1.5, 0.2, 1.5);
+    g_back = MakeFrustumShape(1.1, 0.35, 2);
+    g_neck = MakeOctagon(0.35, 0.5);
+    g_head = MakeFrustumShape(sqrt(1),0,1);
+    g_hair = MakeSphere(0.2);
+
+    GLuint dp_list;
+
+    dp_list = glGenLists(1);
+    glNewList(dp_list, GL_COMPILE);
+    glPushMatrix();
+    SetMaterialColor(color[0], color[1], color[2], 1);
+    glTranslatef(0, 0, 0);
+    glRotatef(90, 1, 0, 0);
+    glCallList(g_base);
+
+    glRotatef(-90, 1, 0, 0);
+
+    SetMaterialColor(0.6, 0.6, 0.6, 1);
+    glTranslatef(-0.75, 0, 0.75);
+    glRotatef(-90, 1, 0, 0);
+    glCallList(g_onbase);
+
+    glRotatef(90, 1, 0, 0);
+    glTranslatef(0.75, 0, -0.75);
+
+    SetMaterialColor(color[0], color[1], color[2], 1);
+    glTranslatef(0, 0.2, 0);
+    glCallList(g_back);
+
+    glTranslatef(0, -0.2, 0);
+
+    SetMaterialColor(0.6, 0.6, 0.6, 1);
+    glTranslatef(0, 1.8, 0);
+    glRotatef(-90, 1, 0, 0);
+    glCallList(g_neck);
+
+    glRotatef(90, 1, 0, 0);
+    glTranslatef(0, -1.8, 0);
+
+    SetMaterialColor(color[0], color[1], color[2], 1);
+    glTranslatef(0, 2.7, 0);
+    glRotatef(180,1,0,0);
+    glCallList(g_head);
+
+    glRotatef(-180,1,0,0);
+    glTranslatef(0, -2.7, 0);
+
+    glTranslatef(0, 2.7, 0);
+    glCallList(g_head);
+
+    glTranslatef(0, -2.7, 0);
+
+    SetMaterialColor(0.6, 0.6, 0.6, 1);
+    glTranslatef(0, 3.7, 0);
+    glCallList(g_hair);
+
+    glTranslatef(0, -3.7, 0);
+
+    glPopMatrix();
+    glEndList();
+
+    return dp_list;
+}
 
 GLuint Knight_view(char name_color) {
     int color[3] = {0, 1, 1};
@@ -185,6 +443,73 @@ GLint Rook_view(char name_color) {
 
     return dp_list;
 }
+
+GLint Pawn_view(char name_color) {
+    int color[3] = {0, 1, 1};
+    if (name_color == 'Y') {
+        color[0] = 1;
+        color[1] = 1;
+        color[2] = 0;
+    }
+
+    GLfloat g_base;
+    GLfloat g_onbase;
+    GLfloat g_back;
+    GLfloat g_neck;
+    GLfloat g_head;
+
+    g_base = MakeOctagon(0.8, 0.5);
+    g_onbase = MakeBox(1.1, 0.2, 1.1);
+    g_back = MakeFrustumShape(0.9, 0.5, 1.2);
+    g_neck = MakeOctagon(0.5, 0.3);
+    g_head = MakeSphere(0.5);
+
+    GLuint dp_list;
+
+    dp_list = glGenLists(1);
+    glNewList(dp_list, GL_COMPILE);
+    glPushMatrix();
+    SetMaterialColor(color[0], color[1], color[2], 1);
+    glTranslatef(0, 0, 0);
+    glRotatef(90, 1, 0, 0);
+    glCallList(g_base);
+
+    glRotatef(-90, 1, 0, 0);
+
+    SetMaterialColor(0.6, 0.6, 0.6, 1);
+    glTranslatef(-0.55, 0, 0.55);
+    glRotatef(-90, 1, 0, 0);
+    glCallList(g_onbase);
+
+    glRotatef(90, 1, 0, 0);
+    glTranslatef(0.55, 0, -0.55);
+
+    SetMaterialColor(color[0], color[1], color[2], 1);
+    glTranslatef(0, 0.2, 0);
+    glCallList(g_back);
+
+    glTranslatef(0, -0.2, 0);
+
+    SetMaterialColor(0.6, 0.6, 0.6, 1);
+    glTranslatef(0, 1, 0);
+    glRotatef(-90, 1, 0, 0);
+    glCallList(g_neck);
+
+    glRotatef(90, 1, 0, 0);
+    glTranslatef(0, -1, 0);
+
+    SetMaterialColor(color[0], color[1], color[2], 1);
+    glTranslatef(0, 1.6, 0);
+    glCallList(g_head);
+
+    glTranslatef(0, -1.6, 0);
+
+    glPopMatrix();
+    glEndList();
+
+    return dp_list;
+}
+
 
 // Board ----------------------------------------------------------------------
 
