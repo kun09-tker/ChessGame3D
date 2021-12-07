@@ -323,6 +323,7 @@ void processSelection(int xx, int yy) {
     idSelected = res;   
     int resTemp = res;     
     std::cout << "Clicked on:" << res << std::endl;
+    // Click on backround to remove selection
     if(res==0){
         idSelected = idSelecting;
         res = idSelecting;
@@ -335,6 +336,7 @@ void processSelection(int xx, int yy) {
 
         std::cout << "Ô: ("
                   << "abcdefgh"[xLocation - 1] << ", " << yLocation << ")\n";
+        // remove previous selection 
         if (resTemp != idSelecting) {
             res = idSelecting;
             idSelected = idSelecting;
@@ -342,12 +344,23 @@ void processSelection(int xx, int yy) {
     }
     if (res >= 66) {
         std::cout << "idSelecting = "<<idSelecting<<" selected: "<<idSelected<<std::endl;
+        // // Player click piece of opponent then remove selection
+        // if(res <= 66 +15 && turn=="player2"){
+        //     res = idSelecting;
+        //     idSelected = idSelecting;
+        // }
+        // else if(res >= 66 + 16 && turn=="player1"){
+        //     res = idSelecting;
+        //     idSelected = idSelecting;
+        // }
         if (res <= 66 + 15){
+            // Click piece 2 times then remove selection
             if(idSelecting == idSelected){
                 listObjectPlayer1[idSelected - 66].setSelected(false);
                 idSelecting = 0;
                 return;
             }
+            // Click another piece then remove selection
             else if(idSelecting != idSelected){
                 listObjectPlayer1[idSelecting - 66].setSelected(false);
             }
@@ -356,11 +369,14 @@ void processSelection(int xx, int yy) {
         }
         //
         else {
+            // Click piece 2 times then remove selection
             if(idSelecting == idSelected){
                 listObjectPlayer2[idSelected - 66 - 16].setSelected(false);
                 idSelecting = 0;
                 return;
-            }else if(idSelecting != idSelected){
+            }
+            // Click another piece then remove selection
+            else if(idSelecting != idSelected){
                 listObjectPlayer2[idSelecting - 66 - 16].setSelected(false);
             }
             listObjectPlayer2[idSelected - 66 - 16].setSelected(true);
