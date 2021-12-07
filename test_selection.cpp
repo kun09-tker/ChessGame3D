@@ -15,9 +15,8 @@
 #include "header/stb_image.h"
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
-void mouse_callback(GLFWwindow *window, double xpos, double ypos);
+// void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
-void processInput(GLFWwindow *window);
 // xử lí chọn model
 void processSelection(int xx, int yy);
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mods);
@@ -77,7 +76,7 @@ int main() {
     }
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetCursorPosCallback(window, mouse_callback);
+    // glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
     glfwSetMouseButtonCallback(window, mouse_button_callback);
 
@@ -178,7 +177,7 @@ int main() {
 
         // input
         // -----
-        processInput(window);
+        camera.Inputs(window);
 
         // render
         // ------
@@ -216,31 +215,31 @@ int main() {
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react
 // accordingly
 // ---------------------------------------------------------------------------------------------------------
-void processInput(GLFWwindow *window) {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
+// void processInput(GLFWwindow *window) {
+//     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+//         glfwSetWindowShouldClose(window, true);
 
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboard(FORWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(BACKWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboard(LEFT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboard(RIGHT, deltaTime);
+//     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+//         camera.ProcessKeyboard(FORWARD, deltaTime);
+//     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+//         camera.ProcessKeyboard(BACKWARD, deltaTime);
+//     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+//         camera.ProcessKeyboard(LEFT, deltaTime);
+//     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+//         camera.ProcessKeyboard(RIGHT, deltaTime);
 
-    // Nếu giữ space thì tắt move camera ngước lại thì bật
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-        camera.setMoveCamera(false);
-        // Hiển thị con trỏ chuột
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    }
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
-        camera.setMoveCamera(true);
-        // Tắt hiển thị con trỏ chuột
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    }
-}
+//     // Nếu giữ space thì tắt move camera ngước lại thì bật
+//     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+//         camera.setMoveCamera(false);
+//         // Hiển thị con trỏ chuột
+//         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+//     }
+//     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
+//         camera.setMoveCamera(true);
+//         // Tắt hiển thị con trỏ chuột
+//         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+//     }
+// }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
@@ -257,23 +256,23 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
 
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
-void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
-    if (firstMouse) {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
+// void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
+//     if (firstMouse) {
+//         lastX = xpos;
+//         lastY = ypos;
+//         firstMouse = false;
+//     }
 
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos;  // reversed since y-coordinates go from bottom to top
+//     float xoffset = xpos - lastX;
+//     float yoffset = lastY - ypos;  // reversed since y-coordinates go from bottom to top
 
-    lastX = xpos;
-    lastY = ypos;
+//     lastX = xpos;
+//     lastY = ypos;
 
-    // Nếu cho phép xoay thì mới xoay camera
-    if (camera.getMoveCamera())
-        camera.ProcessMouseMovement(xoffset, yoffset);
-}
+//     // Nếu cho phép xoay thì mới xoay camera
+//     if (camera.getMoveCamera())
+//         camera.ProcessMouseMovement(xoffset, yoffset);
+// }
 
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
     double x, y;
