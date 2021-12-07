@@ -260,7 +260,7 @@ int main() {
         for (auto &object : listObjectPlayer1) object.render(ourShader, stencilShader, lightPos);
 
         // Vẽ cờ cho người 2chơi 2
-        for (auto &object : listObjectPlayer2) object.render(ourShader, stencilShader, lightPos, true);
+        for (auto &object : listObjectPlayer2) object.render(ourShader, stencilShader, lightPos);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse
         // moved etc.)
