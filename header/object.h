@@ -44,7 +44,7 @@ public:
     void setSelected(bool selected) { isSelected = selected; }
     bool getSelected() { return isSelected; }
 
-    void render(Shader ourShader, Shader stencilShader, glm::vec3 lightPos) {
+    void render(Shader ourShader, Shader stencilShader, glm::vec3 lightPos, bool player2 = false) {
         /*
         Program là Shader
         model là model dùng để load lên
@@ -80,6 +80,10 @@ public:
         // translate it down so it's at the center of the scene
         model = glm::scale(model, glm::vec3(0.005f, 0.005f, 0.005f));
         // it's a bit too big for our scene, so scale it down
+        if(player2){
+            model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        }
+        // If player2 is true, rotate 180 degree
         ourShader.setMat4("model", model);
         this->model->Draw(ourShader);
 
