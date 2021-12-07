@@ -320,11 +320,25 @@ void processSelection(int xx, int yy) {
     glReadPixels(xx * x_scale, viewport[3] - yy * y_scale, 1, 1, GL_STENCIL_INDEX, GL_UNSIGNED_INT,
                  &res);
 
-    idSelected = res;        
+    idSelected = res;   
+    int resTemp = res;     
     std::cout << "Clicked on:" << res << std::endl;
     if(res==0){
         idSelected = idSelecting;
         res = idSelecting;
+    }
+    if (res >= 1 && res <= 65) {
+        // std::cout << "Clicked on:" << res << std::endl;
+        res--;
+        int xLocation = res % 8 + 1, yLocation = res / 8 + 1;
+        // x Là ô chũ, y là ô số
+
+        std::cout << "Ô: ("
+                  << "abcdefgh"[xLocation - 1] << ", " << yLocation << ")\n";
+        if (resTemp != idSelecting) {
+            res = idSelecting;
+            idSelected = idSelecting;
+        }
     }
     if (res >= 66) {
         std::cout << "idSelecting = "<<idSelecting<<" selected: "<<idSelected<<std::endl;
@@ -353,14 +367,6 @@ void processSelection(int xx, int yy) {
             idSelecting = idSelected;
         }
         // listObsdwject[res - 66 + 1].setSelected(true);
-    } else if (res >= 1) {
-        // std::cout << "Clicked on:" << res << std::endl;
-        res--;
-        int xLocation = res % 8 + 1, yLocation = res / 8 + 1;
-        // x Là ô chũ, y là ô số
-
-        std::cout << "Ô: ("
-                  << "abcdefgh"[xLocation - 1] << ", " << yLocation << ")\n";
     }
 }
 
