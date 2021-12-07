@@ -123,13 +123,18 @@ int main() {
     listObject.push_back(Object(0, listModel[0], true, glm::vec3(0.0f, 0.0f, 0.0f), false, false));
 
     // Set Chess for Player 1
+    // Vị trí khởi đầu
     float baseX = -1.32f, baseY = -.005f, baseZ = 1.32f;
-    float rangeObject = 0.38f;
+    float rangeObject = 0.38f;  // Khoảng cách giữa các quân cờ (chỉnh theo ý muốn)
     int indexModel;
     Object obj;
     for (int index = 0; index < 8; ++index) {
         // id, model, checkTexture, position, isFirstPlayer, canSelect
         // Id của cờ player1 từ 65 -> 65 + 8
+        // Ánh xạ index thành model
+        // 0, 1, 2, 3, 4 -> 1, 2, 3, 4, 5
+        // 5, 6, 7 => 3, 2, 1
+        // 8 - 15 -> 7
         int id = index + 65;
         if (index >= 8)
             indexModel = 6;
