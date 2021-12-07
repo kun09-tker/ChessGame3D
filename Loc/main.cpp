@@ -1,37 +1,31 @@
-#include <GL/freeglut.h>
 #include <GL/glew.h>
+#include <GL/freeglut.h>
 #include <GL/glu.h>
 #include <GL/glut.h>
 #include <math.h>
-
-#include <iostream>
 #include <map>
+#include <iostream>
 #include <vector>
-
 #include "rule.h"
 #include "view.h"
 
 using namespace std;
 
-string player = "BULE";  // đội xanh đi đầu tiên
+string player = "BULE";    //cờ xanh đi đầu tiên
 
-int x = 0, y = 0;            // tọa độ ô cờ chọn
-int xmove = 0, ymove = 0;    // tọa độ di chuyển
+int x = 0, y = 0;          // tọa độ ô cờ chọn
+int xmove = 0, ymove = 0;  // tọa độ di chuyển
 int x_old = -1, y_old = -1;  // lưu vị trí cũ xử lý trong process input
 int x_old_copy, y_old_copy;  // lưu vị trí cũ sử dụng ngoài process input
 int x_down, y_down;          // lưu vị trí cờ bị ăn
 
 Cell MatrixBoard[8][8];
+Cell MatrixBoardLose[8][8];
 
 GLfloat g_board;      // hình dạng bàn cờ
 GLfloat g_chessDown;  // lưu hình dạng con cờ bị ăn
 GLfloat g_chessWait;
 GLfloat g_box;
-
-GLuint texture;  // quản lý texture
-
-char texture_name[100] = {"./shinichi.bmp"};  // lưu trữ tên file texture
-char texture_name_clear[100] = {"./clear.bmp"};
 
 float eyeX = 16, eyeY = 33, eyeZ = -21;
 float centerX = 16, centerY = 2, centerZ = 7;
@@ -42,13 +36,17 @@ float down = 0;            // lưu độ cao của cờ
 bool animationMove = false;  // trạng thái di chuyển cờ
 bool animationDown = false;  // trạng thái cờ bị ăn
 bool promotion = false;      // phong cấp
-bool en_passant = false;     // bắt tốt qua đường
-bool castling = false;       // nhập thành
+bool castling = false;      // nhập thành
+bool check = false;         // chiếu
+bool engame = false;        // kết thúc ván cờ
 
-map<string, bool> chess_move;  // kiểm tra con cờ di chuyển hay chưa
+map<string,bool> chess_move; // kiểm tra con cờ di chuyển hay chưa
+map<string,bool> pawn_en_passant; // kiểm tra con tốt nào bị bắt bởi luật bắt tốt qua đường.
 
 vector<GLfloat> MatrixEat_Blue;    // lưu các con cờ xanh bị ăn
 vector<GLfloat> MatrixEat_Yellow;  // lưu các con cờ vàng bị ăn
+
+char playerlose;
 
 void ReShape(int width, int height) {
     glViewport(0, 0, width, height);
@@ -66,7 +64,6 @@ void RenderScene() {
     glLoadIdentity();
     gluLookAt(eyeX, eyeY, eyeZ, centerX, centerY, centerZ, 0.0, 1.0, 0.0);
     glPushMatrix();
-    DrawCoordinate();
     glTranslatef(0, -1, 0);  // để cho bằng với mp Oxz
     glCallList(g_board);
     glTranslatef(2, 1.5, 2);  // để cho con cờ nằm vừa trong ô
@@ -77,14 +74,26 @@ void RenderScene() {
         drawTextColor("Player01", 0, 10, 8, 0.6, 0.6, 0.6, 1);
         drawTextColor("Player02", 30, 10, 8, 1, 1, 0, 1);
     }
-    glTranslatef(10.5, 12, 8);
-    glCallList(Notification_view());
-    // glCallList(Test());
-    glTranslatef(-10.5, -12, -8);
 
-    // glTranslatef(10.5, 20, 8);
-    // glCallList(g_box);
-    // glTranslatef(-10.5, -20, -8);
+    if(check){
+        glTranslatef(10.5, 12, 8);
+        glCallList(Notification_view());
+        drawTextColor("CHECK", 5, 1.5, -0.5, 1, 0, 0, 1);
+        glTranslatef(-10.5, -12, -8);
+    }
+
+    if(engame){
+        glTranslatef(10.5, 12, 8);
+        glCallList(Notification_view());
+        if(playerlose == 'B'){
+            drawTextColor("YELLOW", 5.5, 2, -0.5, 1, 1, 0, 1);
+        }
+        else{
+            drawTextColor("BULE", 4.7, 2, -0.5, 0, 1, 1, 1);
+        }
+        drawTextColor("WIN", 4.5, 1, -0.5, 0, 1, 0, 1);
+        glTranslatef(-10.5, -12, -8);
+    }
 
     if (animationMove) {
         for (int i = 0; i < 8; i++) {
@@ -93,36 +102,54 @@ void RenderScene() {
                 if (i != x_old || j != y_old) {
                     if (Local.name != "empty") {
                         glTranslatef(i * 4, 0, j * 4);
-                        glCallList(MatrixBoard[i][j].shape);
+                        glCallList(Local.shape);
                         glTranslatef(-i * 4, 0, -j * 4);
                     }
                 }
             }
         }
         if (animationDown) {
-            // cout << x_old << " " << y_old << endl;
-            glTranslatef(x_old_copy * 4, 0, y_old_copy * 4);
-            glCallList(g_chessWait);
-            glTranslatef(-x_old_copy * 4, 0, -y_old_copy * 4);
+            if(engame){
+                for(int i = 0; i < 8; i++){
+                    for(int j = 0; j < 8; j++){
+                         Cell Local = MatrixBoardLose[i][j];
+                         if (Local.name != "empty") {
+                            glTranslatef(x_old_copy * 4, 0, y_old_copy * 4);
+                            glCallList(g_chessWait);
+                            glTranslatef(-x_old_copy * 4, 0, -y_old_copy * 4);
 
-            glTranslatef(x_down * 4, -down, y_down * 4);
-            glCallList(g_chessDown);
-            glTranslatef(-x_down * 4, down, -y_down * 4);
-        } else {
+                            glTranslatef(i * 4, -down, j * 4);
+                            glCallList(Local.shape);
+                            glTranslatef(-i * 4, down, -j * 4);
+                         }
+                    }
+                }
+            }
+            else{
+            // cout << x_old << " " << y_old << endl;
+                glTranslatef(x_old_copy * 4, 0, y_old_copy * 4);
+                glCallList(g_chessWait);
+                glTranslatef(-x_old_copy * 4, 0, -y_old_copy * 4);
+
+                glTranslatef(x_down * 4, -down, y_down * 4);
+                glCallList(g_chessDown);
+                glTranslatef(-x_down * 4, down, -y_down * 4);
+            }
+        } 
+        else {
             glTranslatef((x + dx) * 4, 0, (y + dy) * 4);
             glCallList(MatrixBoard[x][y].shape);
             glTranslatef(-(x + dx) * 4, 0, -(y + dy) * 4);
         }
 
     }
-
     else {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 Cell Local = MatrixBoard[i][j];
                 if (Local.name != "empty") {
                     glTranslatef(i * 4, 0, j * 4);
-                    glCallList(MatrixBoard[i][j].shape);
+                    glCallList(Local.shape);
                     glTranslatef(-i * 4, 0, -j * 4);
                 }
                 if (Local.choose || Local.move) {
@@ -137,9 +164,9 @@ void RenderScene() {
                 }
             }
         }
-        glTranslatef(xmove * 4 - 2, -1.48, ymove * 4 - 2);
+        glTranslatef(xmove*4 - 2, -1.48, ymove*4 - 2);
         glCallList(StatusCell_view(player));
-        glTranslatef(-xmove * 4 + 2, 1.48, -ymove * 4 + 2);
+        glTranslatef(-xmove*4 + 2, 1.48, -ymove*4 + 2);
     }
 
     for (int i = 0; i < MatrixEat_Yellow.size(); i++) {
@@ -173,6 +200,7 @@ void RenderScene() {
     glFlush();
 }
 
+
 void timer(int) {
     if (animationMove) {
         glutPostRedisplay();
@@ -193,7 +221,7 @@ void timer(int) {
     }
 }
 
-void menuPromotion(int id) {
+void menuPromotion(int id){
     animationMove = true;
     animationDown = true;
     promotion = false;
@@ -201,19 +229,22 @@ void menuPromotion(int id) {
     y_down = y;
     g_chessDown = MatrixBoard[x_down][y_down].shape;
     g_chessWait = 0;
-    glutTimerFunc(0, timer, 0);
-    string P(1, player[0]);
+    glutTimerFunc(0,timer,0);
+    string P(1,player[0]);
 
-    if (id == 1) {
-        MatrixBoard[x][y] = Cell("Q" + P, Rook_view(player[0]));
-    } else if (id == 2) {
-        MatrixBoard[x][y] = Cell("B" + P, Rook_view(player[0]));
-    } else if (id == 3) {
-        MatrixBoard[x][y] = Cell("N" + P, Rook_view(player[0]));
-    } else {
-        MatrixBoard[x][y] = Cell("R" + P, Rook_view(player[0]));
+    if(id == 1){
+        MatrixBoard[x][y] = Cell("Q"+ P,Queen_view(player[0]));
     }
-
+    else if(id == 2){
+        MatrixBoard[x][y] = Cell("B"+ P,Bishop_view(player[0]));
+    }
+    else if(id == 3){
+        MatrixBoard[x][y] = Cell("N"+ P,Knight_view(player[0]));
+    }
+    else{
+        MatrixBoard[x][y] = Cell("R"+ P,Rook_view(player[0]));
+    }
+    ruleDirection(false,MatrixBoard,x,y,pawn_en_passant,chess_move,castling,check);
     player = ruleSwapPlayer(player);
     glutDestroyMenu(glutGetMenu());
     glutPostRedisplay();
@@ -225,13 +256,27 @@ void processInput(int x, int y) {
         if (x_old != -1 && y_old != -1)
             MatrixBoard[x_old][y_old].choose = false;
         MatrixBoard[x][y].choose = true;  // chọn cờ
-        if ((MatrixBoard[x][y].move ||
-             MatrixBoard[x][y].target)) {  // di chuyển cờ và ăn cờ đối phương
+        if ((MatrixBoard[x][y].move || MatrixBoard[x][y].target)) {  // di chuyển cờ và ăn cờ đối phương
 
             x_down = x;
             y_down = y;
+            check = false;
 
             if (MatrixBoard[x][y].target) {
+                if(MatrixBoard[x][y].name[0] == 'K'){
+                    playerlose = MatrixBoard[x][y].name[1];
+                    engame = true;
+                    for(int i = 0; i < 8; i++){
+                        for(int j = 0; j < 8; j++){
+                            if(MatrixBoard[i][j].name[1] == playerlose){
+                                if(playerlose=='B') MatrixEat_Blue.push_back(MatrixBoard[i][j].shape);
+                                else MatrixEat_Yellow.push_back(MatrixBoard[i][j].shape);
+                                MatrixBoardLose[i][j] = MatrixBoard[i][j];
+                                MatrixBoard[i][j] = Cell(); 
+                            }
+                        }
+                    }
+                }
                 animationDown = true;
                 g_chessDown = MatrixBoard[x][y].shape;
                 x_old_copy = x_old;
@@ -243,16 +288,15 @@ void processInput(int x, int y) {
             xtmp = (dx > 0) ? 1 : -1;
             ytmp = (dy > 0) ? 1 : -1;
             animationMove = true;
-
+            
             ruleSwapChess(MatrixBoard, MatrixEat_Blue, MatrixEat_Yellow, x_old, y_old, x, y, x_down,
-                          y_down, g_chessDown, en_passant, castling, chess_move);
+                          y_down, g_chessDown,pawn_en_passant,castling,chess_move);
 
-            if (MatrixBoard[x][y].name[1] != player[0])
-                ruleDirection(MatrixBoard, x, y, en_passant, chess_move, castling);
+            if (MatrixBoard[x][y].name[1] == player[0])
+                ruleDirection(false,MatrixBoard, x, y,pawn_en_passant,chess_move,castling,check);
 
-            if (MatrixBoard[x][y].name[0] == 'P' &&
-                (x == 0 || x == 7)) {  // tốt vị trí cuối ở đối thủ
-                if (ruleCheckBoundary(x, y)) {
+            if(MatrixBoard[x][y].name[0] == 'P' && (x==0 || x==7)){ // tốt vị trí cuối ở đối thủ
+                if(ruleCheckBoundary(x,y)){
                     promotion = true;
                 }
             }
@@ -260,33 +304,36 @@ void processInput(int x, int y) {
             MatrixBoard[x_old][y_old].choose = false;
             MatrixBoard[x][y].choose = true;
 
-            if (promotion) {
+            if(promotion){
                 glutCreateMenu(menuPromotion);
-                glutAddMenuEntry("Queen", 1);
-                glutAddMenuEntry("Bishop", 2);
-                glutAddMenuEntry("Knight", 3);
-                glutAddMenuEntry("Rook", 4);
+                glutAddMenuEntry("Queen",1);
+                glutAddMenuEntry("Bishop",2);
+                glutAddMenuEntry("Knight",3);
+                glutAddMenuEntry("Rook",4);
                 glutAttachMenu(GLUT_LEFT_BUTTON);
-            } else {
+            }
+            else{
                 player = ruleSwapPlayer(player);
             }
 
-        } else if (!MatrixBoard[x][y].move &&
-                   MatrixBoard[x][y].name[1] == player[0]) {  // xác định hướng đi của cờ
+        }
+        else if (!MatrixBoard[x][y].move && MatrixBoard[x][y].name[1] == player[0]) {  // xác định hướng đi của cờ
             ruleClear(MatrixBoard);
-            ruleDirection(MatrixBoard, x, y, en_passant, chess_move, castling);
-        } else if (!MatrixBoard[x][y].move) {
+            ruleDirection(true,MatrixBoard, x, y,pawn_en_passant,chess_move,castling,check);
+        }
+        else if (!MatrixBoard[x][y].move){
             ruleClear(MatrixBoard);
         }
-        // for (int i = 0; i < 8; i++){
-        //     for (int j = 0; j < 8; j++){
-        //         cout << MatrixBoard[i][j].name << " " ;
-        //     }
-        //     cout << endl;
-        // }
+        for (int i = 0; i < 8; i++){
+            for (int j = 0; j < 8; j++){
+                cout << MatrixBoard[i][j].name << " " ;
+            }
+            cout << endl;
+        }
         glutTimerFunc(0, timer, 0);
-        cout << player << endl;
+ 
     }
+    
 
     x_old = x;
     y_old = y;
@@ -305,18 +352,56 @@ void tasten(unsigned char key, int xmouse, int ymouse) {
     } else if (key == 's') {
         ymove -= 1;
     }
+    if (key == 't'){
+        eyeY++;
+    }
+    else if(key == 'g'){
+        eyeY--;
+    }
+    else if(key == 'f'){
+        eyeX++;
+    }
+    else if(key == 'h'){
+        eyeX--;
+    }
+    else if(key == 'r'){
+        eyeZ++;
+    }
+    else if(key == 'y'){
+        eyeZ--;
+    }
+    else if(key == 'i'){
+        centerY++;
+    }
+    else if(key == 'k'){
+        centerY--;
+    }
+    else if(key == 'j'){
+        centerX++;
+    }
+    else if(key == 'l'){
+        centerX--;
+    }
+    else if(key == 'u'){
+        centerZ++;
+    }
+    else if(key == 'o'){
+        centerZ--;
+    }
 
-    if (int(key) == 13) {
+    
+    if(int(key) == 13){
         x = xmove;
         y = ymove;
         processInput(x, y);
     }
 
-    if (key == 'q') {
+    if(key == 'q'){
         player = ruleSwapPlayer(player);
     }
     glutPostRedisplay();
 }
+
 
 void Init() {
     glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -357,24 +442,23 @@ void Init() {
 
     // KB : Vua bên xanh dương
 
-    GLfloat listShape[12] = {Rook_view('B'), Knight_view('B'), Rook_view('B'), Rook_view('B'),
-                             Rook_view('B'), Knight_view('B'), Rook_view('Y'), Knight_view('Y'),
-                             Rook_view('Y'), Rook_view('Y'),   Rook_view('Y'), Knight_view('Y')};
+    GLfloat listShape[12] = {Rook_view('B'),   Knight_view('B'),   Bishop_view('B'),
+                             Queen_view('B'),   King_view('B'),     Pawn_view('B'),
+                             Rook_view('Y'),   Knight_view('Y'),   Bishop_view('Y'),
+                             Queen_view('Y'),   King_view('Y'),     Pawn_view('Y')};
 
-    MatrixEat_Blue.push_back(listShape[0]);
-    MatrixEat_Yellow.push_back(listShape[8]);
+   // MatrixEat_Blue.push_back(listShape[0]);
+  //  MatrixEat_Yellow.push_back(listShape[8]);
     for (int i = 0; i < 8; i++) {
         int tmp = i < 5 ? i : i - 3 - i % 5 * 2;
-        MatrixBoard[0][i] =
-            Cell(listName[tmp] + "B", listShape[tmp]);  // Xây hàng xe, ngựa, ... xanh dương
+        MatrixBoard[0][i] = Cell(listName[tmp] + "B", listShape[tmp]);  // Xây hàng xe, ngựa, ... xanh dương
         MatrixBoard[1][i] = Cell(listName[5] + "B", listShape[5]);  // Xây hàng tốt xanh dương
-        MatrixBoard[7][7 - i] =
-            Cell(listName[tmp] + "Y", listShape[tmp + 6]);  // Xây hàng xe, ngựa, ... vàng
+        MatrixBoard[7][7 - i] = Cell(listName[tmp] + "Y", listShape[tmp + 6]);  // Xây hàng xe, ngựa, ... vàng
         MatrixBoard[6][7 - i] = Cell(listName[5] + "Y", listShape[11]);  // Xây hàng tốt vàng
     }
     g_board = Board_view(4, 1);
     g_box = MakeCube(3);
-    // texture =  loadBMP_custom(texture_name);
+   // texture =  loadBMP_custom(texture_name);
 }
 
 int main(int argc, char *argv[]) {

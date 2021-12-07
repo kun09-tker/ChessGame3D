@@ -47,7 +47,6 @@ void renderBitMap(float x, float y,float z, void *font, char *string, float xSca
 	c = string;
 	glPushMatrix();
     glRasterPos3f(x,y,z);
-	//glTranslatef(x-50, y + 50,10);
 	for (c = string; *c != '\0'; c++) {
 		glScalef(xScale, yScale, zScale);
 		glutBitmapCharacter(font, (int)*c);
@@ -55,7 +54,7 @@ void renderBitMap(float x, float y,float z, void *font, char *string, float xSca
 	glPopMatrix();
 }
 void drawTextColor(const char* text,float x, float y,float z, float r, float g, float b, float apha , float xScale = 0, float yScale = 0, float zScale = 0){
-	char buf[1000] = { 0 };
+	char buf[1000] = {0};
     sprintf_s(buf, text);
     SetLightColor(r,g,b,apha);
 	renderBitMap(x, y,z, GLUT_BITMAP_TIMES_ROMAN_24, buf, xScale, yScale, zScale);
