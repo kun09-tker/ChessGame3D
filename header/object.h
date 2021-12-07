@@ -128,3 +128,4 @@ public:
     // Tính toán các tọa độ có thể đi đến
     virtual void computeAvailableMovements(std::vector<Object *> &owner,
                                            std::vector<Object *> &opponent){};
+};
