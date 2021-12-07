@@ -157,7 +157,7 @@ int main() {
     for (int index = 0; index < 16; ++index) {
         // id, model, checkTexture, position, isFirstPlayer, canSelect
         // Id của cờ player1 từ 66 + 8 -> 66 + 16
-        int id = index + 66 + 8;
+        int id = index + 66 + 16;
         if (index >= 8)
             indexModel = 6;
         else if (index <= 4)
@@ -319,11 +319,11 @@ void processSelection(int xx, int yy) {
     idSelected = res;
     std::cout << "Clicked on:" << res << std::endl;
     if (res >= 66) {
-        if (res <= 66 + 7) {
-        }
-        // listObject[idSelected - 66 + 1].setSelected(false);
-        else {
-        }
+        if (res <= 66 + 7)
+            listObjectPlayer1[idSelected - 66].setSelected(true);
+        //
+        else
+            listObjectPlayer2[idSelected - 66 - 16].setSelected(true);
         // listObsdwject[res - 66 + 1].setSelected(true);
     } else if (res >= 1) {
         // std::cout << "Clicked on:" << res << std::endl;
