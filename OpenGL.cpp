@@ -133,7 +133,7 @@ int main() {
     Object obj;
     for (int index = 0; index < 16; ++index) {
         // id, model, checkTexture, position, isFirstPlayer, canSelect
-        // Id của cờ player1 từ 66 -> 66 + 8
+        // Id của cờ player1 từ 66 -> 66 + 16
         // Ánh xạ index thành model
         // 0, 1, 2, 3, 4 -> 1, 2, 3, 4, 5
         // 5, 6, 7 => 3, 2, 1
