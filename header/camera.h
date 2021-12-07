@@ -8,6 +8,7 @@
 #include<glm/gtc/type_ptr.hpp>
 #include<glm/gtx/rotate_vector.hpp>
 #include<glm/gtx/vector_angle.hpp>
+#include<iostream>
 #include <vector>
 
 // Defines several possible options for camera movement. Used as abstraction to stay away from
@@ -23,6 +24,8 @@ const float ZOOM = 45.0f;
 const unsigned int width = 900;
 const unsigned int height = 900;
 float sensitivity = 100.0f;
+double mX=width/2, mY=height/2;
+bool after_mouse_move = false;
 
 
 // An abstract camera class that processes input and calculates the corresponding Euler Angles,
@@ -189,7 +192,10 @@ void Camera::Inputs(GLFWwindow* window)
     {
         // Hides mouse cursor
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-
+        if(!after_mouse_move){
+            glfwGetCursorPos(window, &mX, &mY);
+            after_mouse_move = true;
+        }
         // Prevents camera from jumping on the first click
         if (firstClick)
         {
@@ -221,10 +227,15 @@ void Camera::Inputs(GLFWwindow* window)
         Front = glm::rotate(Front, glm::radians(-rotY), Up);
 
         // Sets mouse cursor to the middle of the screen so that it doesn't end up roaming around
+        
         glfwSetCursorPos(window, (width / 2), (height / 2));
     }
     else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
     {
+        if(after_mouse_move) {
+            glfwSetCursorPos(window, mX, mY);
+            after_mouse_move = false;
+        }
         // Unhides cursor since camera is not looking around anymore
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         // Makes sure the next time the camera looks around it doesn't jump
