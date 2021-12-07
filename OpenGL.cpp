@@ -222,35 +222,6 @@ int main() {
     return 0;
 }
 
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react
-// accordingly
-// ---------------------------------------------------------------------------------------------------------
-// void processInput(GLFWwindow *window) {
-//     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-//         glfwSetWindowShouldClose(window, true);
-
-//     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-//         camera.ProcessKeyboard(FORWARD, deltaTime);
-//     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-//         camera.ProcessKeyboard(BACKWARD, deltaTime);
-//     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-//         camera.ProcessKeyboard(LEFT, deltaTime);
-//     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-//         camera.ProcessKeyboard(RIGHT, deltaTime);
-
-//     // Nếu giữ space thì tắt move camera ngước lại thì bật
-//     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-//         camera.setMoveCamera(false);
-//         // Hiển thị con trỏ chuột
-//         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-//     }
-//     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
-//         camera.setMoveCamera(true);
-//         // Tắt hiển thị con trỏ chuột
-//         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-//     }
-// }
-
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
@@ -263,26 +234,6 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     window_width = width;
     window_height = height;
 }
-
-// glfw: whenever the mouse moves, this callback is called
-// -------------------------------------------------------
-// void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
-//     if (firstMouse) {
-//         lastX = xpos;
-//         lastY = ypos;
-//         firstMouse = false;
-//     }
-
-//     float xoffset = xpos - lastX;
-//     float yoffset = lastY - ypos;  // reversed since y-coordinates go from bottom to top
-
-//     lastX = xpos;
-//     lastY = ypos;
-
-//     // Nếu cho phép xoay thì mới xoay camera
-//     if (camera.getMoveCamera())
-//         camera.ProcessMouseMovement(xoffset, yoffset);
-// }
 
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
     double x, y;
