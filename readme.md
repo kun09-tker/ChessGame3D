@@ -1,9 +1,9 @@
 # 3D Chess
 
 ### How To Run
-> g++ main.cpp -o m -lglut -lGLU -lGL
+> g++ -o OpenGL.exe OpenGL.cpp src\glad.c -lm -Wall -lopengl32 -llibassimp -lglew32 -lglu32 -lglfw3 -lgdi32 ; .\OpenGL.exe
 
-> ./m
+
 
 
 
