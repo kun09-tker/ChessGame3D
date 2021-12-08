@@ -165,12 +165,12 @@ public:
         // Vị trí xuất phát
         int startX = posX;
         int startZ = posY;
-        std::cout<<"Start: "<<posX<<" "<<posY<<std::endl;
-        std::cout<<"Final: "<<finalX<<" "<<finalZ<<std::endl;
+        // std::cout<<"Start: "<<posX<<" "<<posY<<std::endl;
+        // std::cout<<"Final: "<<finalX<<" "<<finalZ<<std::endl;
         float x = this->position.x;
         float y = this->position.y;
         float z = this->position.z;
-        std::cout<<"X: "<<x<<" Y: "<<y<<" Z: "<<z<<endl;	
+        // std::cout<<"X: "<<x<<" Y: "<<y<<" Z: "<<z<<endl;	
         //step
         float stepZ = abs(finalX-this->posX)*0.377/50;
         float stepX = abs(finalZ-this->posY)*0.377/50;
@@ -179,7 +179,7 @@ public:
         float X = abs(target[0]-x);
         float Y = y;
         float Z = abs(target[2]-z);
-        std::cout<<"X: "<<X<<" Y: "<<Y<<" Z: "<<Z<<endl;
+        // std::cout<<"X: "<<X<<" Y: "<<Y<<" Z: "<<Z<<endl;
         
         // Direction
         int directionZ = 1;
@@ -187,9 +187,9 @@ public:
         float z_temp = z;
         
         //Khoảng cách
-        std::cout <<"z,Z: "<< stepZ << " " << Z << std::endl;
+        // std::cout <<"z,Z: "<< stepZ << " " << Z << std::endl;
         float a = Z/2;
-        std::cout <<"a: "<< a << std::endl;
+        // std::cout <<"a: "<< a << std::endl;
         if(finalX < startX){
             directionZ = -1;
             z_temp = 2*a + z;
@@ -197,7 +197,7 @@ public:
         if(finalZ < startZ){
             directionX = -1;
         }
-        std::cout <<"Direct" << directionZ << " X: " << directionX << std::endl;
+        // std::cout <<"Direct" << directionZ << " X: " << directionX << std::endl;
         while(Z>0){
             // std::cout <<"Vao White" << std::endl;
             z -= stepZ*directionZ;
@@ -212,7 +212,6 @@ public:
             //     break;
             // }
         }
-        cout<<z<<endl;
         setPos(finalX,finalZ);
     }
 };
