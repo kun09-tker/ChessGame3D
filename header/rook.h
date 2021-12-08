@@ -13,7 +13,7 @@ public:
         : Chess(id, model, checkTexture, posX, posY, isFirstPlayer){};
     ~Rook(){};
 
-    virtual void computeAvailableMovements(std::vector<Chess *> own, std::vector<Chess *> opp) {
+    virtual void computeAvailableMovements(std::vector<Chess *> &own, std::vector<Chess *> &opp) {
         std::vector<int> pos = std::vector<int>();
         pos.resize(2);
         pos[0] = posX + 1;
