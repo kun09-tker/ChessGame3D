@@ -26,7 +26,8 @@ const unsigned int SCR_WIDTH = 900;
 const unsigned int SCR_HEIGHT = 690;
 
 // camera
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+
+Camera camera(glm::vec3(0.0f, 1.5f, 6.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -57,6 +58,9 @@ Object board;
 // 4 biến hỗ trợ selection
 int window_width = SCR_WIDTH, window_height = SCR_HEIGHT;
 int framebuffer_width, framebuffer_height;
+
+// Selection
+int idSelecting = 0;
 
 int main() {
     // glfw: initialize and configure
@@ -316,16 +320,15 @@ void processSelection(int xx, int yy) {
     glReadPixels(xx * x_scale, viewport[3] - yy * y_scale, 1, 1, GL_STENCIL_INDEX, GL_UNSIGNED_INT,
                  &res);
 
-    idSelected = res;
+    idSelected = res;   
+    int resTemp = res;     
     std::cout << "Clicked on:" << res << std::endl;
-    if (res >= 66) {
-        if (res <= 66 + 15)
-            listObjectPlayer1[idSelected - 66].setSelected(true);
-        //
-        else
-            listObjectPlayer2[idSelected - 66 - 16].setSelected(true);
-        // listObsdwject[res - 66 + 1].setSelected(true);
-    } else if (res >= 1) {
+    // Click on backround to remove selection
+    if(res==0){
+        idSelected = idSelecting;
+        res = idSelecting;
+    }
+    if (res >= 1 && res <= 65) {
         // std::cout << "Clicked on:" << res << std::endl;
         res--;
         int xLocation = res % 8 + 1, yLocation = res / 8 + 1;
@@ -333,6 +336,53 @@ void processSelection(int xx, int yy) {
 
         std::cout << "Ô: ("
                   << "abcdefgh"[xLocation - 1] << ", " << yLocation << ")\n";
+        // remove previous selection 
+        if (resTemp != idSelecting) {
+            res = idSelecting;
+            idSelected = idSelecting;
+        }
+    }
+    if (res >= 66) {
+        std::cout << "idSelecting = "<<idSelecting<<" selected: "<<idSelected<<std::endl;
+        // // Player click piece of opponent then remove selection
+        // if(res <= 66 +15 && turn=="player2"){
+        //     res = idSelecting;
+        //     idSelected = idSelecting;
+        // }
+        // else if(res >= 66 + 16 && turn=="player1"){
+        //     res = idSelecting;
+        //     idSelected = idSelecting;
+        // }
+        if (res <= 66 + 15){
+            // Click piece 2 times then remove selection
+            if(idSelecting == idSelected){
+                listObjectPlayer1[idSelected - 66].setSelected(false);
+                idSelecting = 0;
+                return;
+            }
+            // Click another piece then remove selection
+            else if(idSelecting != idSelected){
+                listObjectPlayer1[idSelecting - 66].setSelected(false);
+            }
+            listObjectPlayer1[idSelected - 66].setSelected(true);
+            idSelecting = idSelected;
+        }
+        //
+        else {
+            // Click piece 2 times then remove selection
+            if(idSelecting == idSelected){
+                listObjectPlayer2[idSelected - 66 - 16].setSelected(false);
+                idSelecting = 0;
+                return;
+            }
+            // Click another piece then remove selection
+            else if(idSelecting != idSelected){
+                listObjectPlayer2[idSelecting - 66 - 16].setSelected(false);
+            }
+            listObjectPlayer2[idSelected - 66 - 16].setSelected(true);
+            idSelecting = idSelected;
+        }
+        // listObsdwject[res - 66 + 1].setSelected(true);
     }
 }
 
