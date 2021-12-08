@@ -1,4 +1,5 @@
 {
+    "terminal.integrated.defaultProfile.windows":"Command Prompt",
     "files.associations": {
         "*.js": "javascriptreact",
         "iomanip": "cpp",
@@ -50,14 +51,23 @@
         "cinttypes": "cpp",
         "typeinfo": "cpp",
         "xiosbase": "cpp",
+<<<<<<< HEAD
         "xlocale": "cpp",
         "xlocnum": "cpp",
+=======
+>>>>>>> f225bdca92dfcadc1c7e26fc0110666d67bc9102
         "cstring": "cpp",
         "fstream": "cpp",
         "ios": "cpp",
         "map": "cpp",
         "xfacet": "cpp",
+<<<<<<< HEAD
         "xlocinfo": "cpp",
+=======
+        "xlocale": "cpp",
+        "xlocinfo": "cpp",
+        "xlocnum": "cpp",
+>>>>>>> f225bdca92dfcadc1c7e26fc0110666d67bc9102
         "xmemory": "cpp",
         "xstddef": "cpp",
         "xstring": "cpp",
@@ -65,5 +75,6 @@
         "xtree": "cpp",
         "xutility": "cpp"
     },
-    "C_Cpp.errorSquiggles": "Disabled"
+    "C_Cpp.errorSquiggles": "Disabled",
+    "cmake.configureOnOpen": false
 }
