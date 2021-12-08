@@ -3,7 +3,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
-
+#include<unistd.h>
+unsigned int microsecond = 1000000;
 #include "object.h"
 
 class Chess : public Object {
@@ -38,7 +39,10 @@ public:
         this->posY = posY;
         this->position = computeRealPosition();
     }
-
+    void setPos(int posX, int posY) {
+        this->posX = posX;
+        this->posY = posY;
+    }
     glm::vec2 getPosition() { return glm::vec2(posX, posY); }
 
     // Tính toán các tọa độ có thể đi đến
@@ -92,6 +96,7 @@ public:
         //Thay đổi vị trí của con cờ giống như di chuyển
         if(this->animations.size()!=0){
             // std::cout << "Vao animation" << std::endl;
+            usleep(0.05*microsecond);
             this->position = this->animations[0];
             this->animations.erase(this->animations.begin());
         }
@@ -138,21 +143,51 @@ public:
     }
     //Dùng để tạo tọa độ giống như di chuyển vào push vào vector animation
     void Move(int finalX,int finalZ){
+        cout<<"FinalX: "<<finalX<<" FinalZ: "<<finalZ<<endl;
         //Vị trí xuất phát
+        cout<<"PosX: "<<this->posX<<" PosY: "<<this->posY<<endl;
         float x = this->position.x;
         float y = this->position.y;
         float z = this->position.z;
+        std::cout<<"X: "<<x<<" Y: "<<y<<" Z: "<<z<<endl;	
         //Đích đến
-        float X = x;
+        float X = abs(finalX - this->posX)*0.377;
         float Y = y;
-        float Z = z - ((finalZ-1) * 0.377);
+        float Z = ((abs(finalZ-this->posY)) * 0.377);
+        //step
+        float stepZ = Z/50;
+        float stepX = X/50;
+        // Direction
+        int directionZ = 1;
+        int directionX = 1;
+        float z_temp = z;
+        
         //Khoảng cách
-        std::cout << z << " " << Z << std::endl;
-        float a = Z - z;
-        while(z>Z){
-            // std::cout <<"Vao White" << std::endl;
-            z -= 0.1;
-            this->animations.push_back(glm::vec3(X, Y, z));
+        std::cout <<"z,Z: "<< stepZ << " " << Z << std::endl;
+        float a = Z/2;
+        std::cout <<"a: "<< a << std::endl;
+        if(finalZ < this->posY){
+            directionZ = -1;
+            z_temp = 2*a + z;
         }
+        if(finalX < this->posX){
+            directionX = -1;
+        }
+        while(Z>0){
+            // std::cout <<"Vao White" << std::endl;
+            z -= stepZ*directionZ;
+            Z -= stepZ;
+            x += stepX*directionX;
+            Y = y + -(0.5f/pow(a,2.0))*pow((z+a-z_temp),2.0)+0.5;    
+            if(Y<=0.005){
+                Y = 0.005;
+            }
+            this->animations.push_back(glm::vec3(x, Y, z));
+            // if(Y<=0.005){
+            //     break;
+            // }
+        }
+        cout<<z<<endl;
+        setPos(finalX,finalZ);
     }
 };
