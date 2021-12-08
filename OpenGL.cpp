@@ -49,7 +49,7 @@ void setTitleFPS(GLFWwindow *window, int nbFrames);
 int idSelected;
 // Đối tượng đang chọn
 int idSelecting = 0;
-//Lượt
+// Lượt
 int turn = 0;
 // Đã chọn cờ
 bool piece_chosen = false;
@@ -272,13 +272,12 @@ void processSelection(int xx, int yy) {
     glReadPixels(xx * x_scale, viewport[3] - yy * y_scale, 1, 1, GL_STENCIL_INDEX, GL_UNSIGNED_INT,
                  &res);
 
-    idSelected = res;
     int resTemp = res;
     std::cout << "Clicked on:" << res << std::endl;
-    if (res == 0) {
-        idSelected = idSelecting;
-        res = idSelecting;
-    }
+
+    if (res == 0)
+        return;
+
     if (res >= 1 && res <= 65) {
         // std::cout << "Clicked on:" << res << std::endl;
         res--;
@@ -291,43 +290,46 @@ void processSelection(int xx, int yy) {
             res = idSelecting;
             idSelected = idSelecting;
         }
-        //Chọn ô xong sẽ quyết định con cờ di chuyển hay không
-        // TẠM KHÓA
-        // if(piece_chosen){
-        //     if(turn%2==0){
-        //         listChessPlayer1[idSelecting - 66]->Move(xLocation, yLocation);
-        //     }else{
-        //         listChessPlayer2[idSelecting - 66 - 16]->Move(xLocation, yLocation);
-        //     }
-        //     turn++;
-        // }
+        // Chọn ô xong sẽ quyết định con cờ di chuyển hay không
+        //  TẠM KHÓA
+        //  if(piece_chosen){
+        //      if(turn%2==0){
+        //          listChessPlayer1[idSelecting - 66]->Move(xLocation, yLocation);
+        //      }else{
+        //          listChessPlayer2[idSelecting - 66 - 16]->Move(xLocation, yLocation);
+        //      }
+        //      turn++;
+        //  }
     }
     if (res >= 66) {
+        idSelecting = res;
         std::cout << "idSelecting = " << idSelecting << " selected: " << idSelected << std::endl;
         if (res <= 66 + 15) {
+            // Click piece 2 times then remove selection
             if (idSelecting == idSelected) {
                 listChessPlayer1[idSelected - 66]->setSelected(false);
-                idSelecting = 0;
+                // idSelecting = 0;
                 piece_chosen = false;
                 return;
-            } else if (idSelecting != idSelected) {
-                listChessPlayer1[idSelecting - 66]->setSelected(false);
             }
-            listChessPlayer1[idSelected - 66]->setSelected(true);
-            idSelecting = idSelected;
+            // Click another piece then remove selection
+            if (idSelected >= 66)
+                listChessPlayer1[idSelected - 66]->setSelected(false);
+            listChessPlayer1[idSelecting - 66]->setSelected(true);
+            idSelected = idSelecting;
         }
         //
         else {
             if (idSelecting == idSelected) {
                 listChessPlayer2[idSelected - 66 - 16]->setSelected(false);
-                idSelecting = 0;
+                // idSelecting = 0;
                 piece_chosen = false;
                 return;
-            } else if (idSelecting != idSelected) {
-                listChessPlayer2[idSelecting - 66 - 16]->setSelected(false);
             }
+            if (idSelected >= 66)
+                listChessPlayer2[idSelecting - 66 - 16]->setSelected(false);
             listChessPlayer2[idSelected - 66 - 16]->setSelected(true);
-            idSelecting = idSelected;
+            idSelected = idSelecting;
         }
         // listObsdwject[res - 66 + 1]->setSelected(true);
         piece_chosen = true;
