@@ -9,6 +9,7 @@
 class Pawn : public Chess {
 private:
     int d = 0;
+    std::string name = "Pawn";
 
 public:
     Pawn(){};
@@ -20,7 +21,8 @@ public:
             d = -1;
         }
     };
-    ~Pawn(){};
+
+    std::string getName() { return name; }
 
     virtual void computeAvailableMovements(std::vector<Chess *> &own, std::vector<Chess *> &opp) {
         std::vector<int> pos = std::vector<int>();
