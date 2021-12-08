@@ -139,7 +139,6 @@ public:
                     // board.movePieceTo(current_piece->getVaoID(), posX, posY);
                     // changeTurn();
                 } else {
-                    std::cout << "\tMouvement non valide, votre roi est en échec !\n";
                     current_piece->moveTo(tempPos);
                     opponent->computeAvailableMovements(opponent->getChess(), current->getChess());
                     std::cout << "success 4" << std::endl;
@@ -164,5 +163,124 @@ public:
             }
         }
         return threateningPieces;
+    }
+
+    void changeTurn() {
+        /* Change le joueur en cours */
+        turn = (turn == 1) ? 2 : 1;
+        computeAvailableMovements();
+
+        // scene->unselect();
+
+        if (turn == 1) {
+            std::vector<Chess *> checkState =
+                check(player1, player2, player1->getKing()->getPosition());
+            if (checkState.size() > 0) {
+                // std::cout << "\nJoueur 1, vous êtes en échec !" << std::endl;
+                // scene->setSelectTex(1);
+                if (checkMate(player1, player2, checkState))
+                    endGame(2);
+            } else {
+                // scene->setSelectTex(0);
+            }
+        } else if (turn == 2) {
+            std::vector<Chess *> checkState =
+                check(player2, player1, player2->getKing()->getPosition());
+            if (checkState.size()) {
+                std::cout << "\nJoueur 2, vous êtes en échec !" << std::endl;
+                // scene->setSelectTex(1);
+                if (checkMate(player2, player1, checkState))
+                    endGame(1);
+            } else {
+                // scene->setSelectTex(0);
+            }
+        }
+    }
+
+    void endGame(int winner) {
+        // scene->setSelectTex(2);
+
+        Player *looser;
+        if (winner == 1) {
+            looser = player2;
+        } else {
+            looser = player1;
+        }
+        std::cout << "\nThe player " << winner << " is win! ";
+
+        for (unsigned int i = 0; i < looser->getChess().size(); i++) {
+            Chess *chess = looser->getChess()[i];
+            if (chess->getName() == "King")
+                continue;
+            // scene->ejectVAO(chess->getVaoID() - 1);
+        }
+    }
+
+    bool checkMate(Player *player, Player *opponent, std::vector<Chess *> threateningPieces) {
+        bool isInCheckMate = true;
+        glm::vec2 tempPos = player->getKing()->getPosition();
+        glm::vec2 kingPos = tempPos;
+        std::vector<int> temp;
+
+        for (unsigned int j = 0; j < player->getKing()->getAvailableMovements().size(); j++) {
+            temp = player->getKing()->getAvailableMovements()[j];
+            kingPos = glm::vec2(temp[0], temp[1]);
+            player->getKing()->moveTo(kingPos[0], kingPos[1]);
+            opponent->computeAvailableMovements(opponent->getChess(), player->getChess());
+            if (check(player, opponent, kingPos).size() == 0) {
+                isInCheckMate = false;
+                break;
+            }
+        }
+        player->getKing()->moveTo(tempPos[0], tempPos[1]);
+        opponent->computeAvailableMovements(opponent->getChess(), player->getChess());
+
+        if (!isInCheckMate)
+            return false;
+
+        if (threateningPieces.size() > 1)
+            return true;
+
+        glm::vec2 positionToReach = threateningPieces[0]->getPosition();
+
+        for (unsigned int i = 0; i < player->getChess().size(); i++) {
+            for (unsigned int j = 0; j < player->getChess()[i]->getAvailableMovements().size();
+                 j++) {
+                std::vector<int> possibleMovement =
+                    player->getChess()[i]->getAvailableMovements()[j];
+                if ((possibleMovement[0] == positionToReach[0]) &&
+                    (possibleMovement[1] == positionToReach[1]))
+                    return false;
+            }
+        }
+
+        kingPos = player->getKing()->getPosition();
+        for (unsigned int i = 0; i < player->getChess().size(); i++) {
+            if (player->getChess()[i]->getName() == "King")
+                continue;
+            tempPos = player->getChess()[i]->getPosition();
+            for (unsigned int j = 0; j < player->getChess()[i]->getAvailableMovements().size();
+                 j++) {
+                std::vector<int> possibleMovement =
+                    player->getChess()[i]->getAvailableMovements()[j];
+                player->getChess()[i]->moveTo(possibleMovement);
+                opponent->computeAvailableMovements(opponent->getChess(), player->getChess());
+                if (check(player, opponent, kingPos).size() == 0) {
+                    //                std::cout << "\nAttend attend, si tu bouges ton " <<
+                    //                player.getPieces()[i]->getName() << " (" << tempPos[0] << ":"
+                    //                          << tempPos[1] << ") en " <<
+                    //                          " (" << possibleMovement[0] << ":"<<
+                    //                          possibleMovement[1]
+                    //                          << "), tu n'est plus en échec !\n" <<std::endl;
+                    player->getChess()[i]->moveTo(tempPos);
+                    return false;
+                }
+            }
+            player->getChess()[i]->moveTo(tempPos);
+        }
+
+        std::cout << "\nCHECK MATE!\n";
+
+        return true;
     }
 };

@@ -7,11 +7,14 @@
 
 class King : public Chess {
 private:
+    std::string name = "King";
+
 public:
     King(){};
     King(int id, Model *model, bool checkTexture, int posX, int posY, bool isFirstPlayer)
         : Chess(id, model, checkTexture, posX, posY, isFirstPlayer){};
     ~King(){};
+    virtual std::string getName() { return name; }
 
     virtual void computeAvailableMovements(std::vector<Chess *> &own, std::vector<Chess *> &opp) {
         std::vector<int> pos = std::vector<int>();

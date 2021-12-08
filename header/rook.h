@@ -7,11 +7,15 @@
 
 class Rook : public Chess {
 private:
+    std::string name = "Rook";
+
 public:
     Rook(){};
     Rook(int id, Model *model, bool checkTexture, int posX, int posY, bool isFirstPlayer)
         : Chess(id, model, checkTexture, posX, posY, isFirstPlayer){};
     ~Rook(){};
+
+    std::string getName() { return name; }
 
     virtual void computeAvailableMovements(std::vector<Chess *> &own, std::vector<Chess *> &opp) {
         std::vector<int> pos = std::vector<int>();
