@@ -285,17 +285,18 @@ void processSelection(int xx, int yy) {
         // x Là ô chũ, y là ô số
 
         std::cout << "Ô: ("
-                  << "abcdefgh"[xLocation - 1] << ", " << yLocation << ")\n";
+                << "abcdefgh"[xLocation - 1] << ", " << yLocation << ")\n";
         // Chọn ô xong sẽ quyết định con cờ di chuyển hay không
         //  TẠM KHÓA
-        //  if(piece_chosen){
-        //      if(turn%2==0){
-        //          listChessPlayer1[idSelecting - 66]->Move(xLocation, yLocation);
-        //      }else{
-        //          listChessPlayer2[idSelecting - 66 - 16]->Move(xLocation, yLocation);
-        //      }
-        //      turn++;
-        //  }
+        if(piece_chosen){
+            if(turn%2==0){
+                listChessPlayer1[idSelected - 66]->Move(xLocation, yLocation);
+            }else{
+                listChessPlayer2[idSelected - 66 - 16]->Move(xLocation, yLocation);
+            }
+            // turn++;
+            piece_chosen = false;
+        }
     }
     if (res >= 66) {
         idSelecting = res;
@@ -324,8 +325,8 @@ void processSelection(int xx, int yy) {
         else
             listChessPlayer2[idSelecting - 66 - 16]->setSelected(true);
         idSelected = idSelecting;
+        piece_chosen = true;
     }
-    piece_chosen = true;
 }
 
 void setTitleFPS(GLFWwindow *window, int nbFrames) {

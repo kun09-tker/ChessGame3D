@@ -17,6 +17,7 @@ protected:
 
     // Tọa độ có thể di chuyển đến
     std::vector<std::vector<int> > availableMovements;
+    std::vector<glm::vec3> animations;
 
 public:
     Chess(){};
@@ -88,6 +89,12 @@ public:
         // render the loaded model
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, this->position);
+        //Thay đổi vị trí của con cờ giống như di chuyển
+        if(this->animations.size()!=0){
+            // std::cout << "Vao animation" << std::endl;
+            this->position = this->animations[0];
+            this->animations.erase(this->animations.begin());
+        }
         // translate it down so it's at the center of the scene
         model = glm::scale(model, glm::vec3(0.005f, 0.005f, 0.005f));
         // it's a bit too big for our scene, so scale it down
@@ -116,6 +123,9 @@ public:
             model = glm::mat4(1.0f);
             model = glm::translate(model, this->position);
             // translate it down so it's at the center of the scene
+            if (this->canSelect && !this->isFirstPlayer) {
+                model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+            }
             model = glm::scale(model, glm::vec3(0.0055f, 0.005109f, 0.0055f));
             // it's a bit too big for our scene, so scale it down
             stencilShader.setMat4("model", model);
@@ -124,6 +134,25 @@ public:
             glStencilMask(0xFF);
             glStencilFunc(GL_ALWAYS, 0, 0xFF);
             glEnable(GL_DEPTH_TEST);
+        }
+    }
+    //Dùng để tạo tọa độ giống như di chuyển vào push vào vector animation
+    void Move(int finalX,int finalZ){
+        //Vị trí xuất phát
+        float x = this->position.x;
+        float y = this->position.y;
+        float z = this->position.z;
+        //Đích đến
+        float X = x;
+        float Y = y;
+        float Z = z - ((finalZ-1) * 0.377);
+        //Khoảng cách
+        std::cout << z << " " << Z << std::endl;
+        float a = Z - z;
+        while(z>Z){
+            // std::cout <<"Vao White" << std::endl;
+            z -= 0.1;
+            this->animations.push_back(glm::vec3(X, Y, z));
         }
     }
 };
