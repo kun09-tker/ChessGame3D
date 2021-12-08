@@ -295,11 +295,6 @@ void processSelection(int xx, int yy) {
 
         if (piece_chosen) {
             game.tryMovement(idSelected, xLocation, yLocation);
-            if (turn % 2 == 0) {
-                player1->getChessById(idSelected)->Move(xLocation, yLocation);
-            } else {
-                player2->getChessById(idSelected)->Move(xLocation, yLocation);
-            }
             // turn++;
             piece_chosen = false;
         }

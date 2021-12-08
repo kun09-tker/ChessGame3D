@@ -156,8 +156,9 @@ public:
     }
 
     void moveTo(int targetX, int targetY) {
-        posX = targetX;
-        posY = targetY;
+        // posX = targetX;
+        // posY = targetY;
+        this->Move(targetX, targetY);
     }
 
     void moveTo(glm::vec2 pos) { moveTo(pos[0], pos[1]); }
