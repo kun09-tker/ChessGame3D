@@ -286,10 +286,6 @@ void processSelection(int xx, int yy) {
 
         std::cout << "Ô: ("
                   << "abcdefgh"[xLocation - 1] << ", " << yLocation << ")\n";
-        if (resTemp != idSelecting) {
-            res = idSelecting;
-            idSelected = idSelecting;
-        }
         // Chọn ô xong sẽ quyết định con cờ di chuyển hay không
         //  TẠM KHÓA
         //  if(piece_chosen){
@@ -307,28 +303,34 @@ void processSelection(int xx, int yy) {
         if (res <= 66 + 15) {
             // Click piece 2 times then remove selection
             if (idSelecting == idSelected) {
-                listChessPlayer1[idSelected - 66]->setSelected(false);
+                listChessPlayer1[idSelected - 66 - (idSelected >= 82 ? 16 : 0)]->setSelected(false);
                 // idSelecting = 0;
                 piece_chosen = false;
                 return;
             }
             // Click another piece then remove selection
             if (idSelected >= 66)
-                listChessPlayer1[idSelected - 66]->setSelected(false);
+                if (idSelected >= 82)
+                    listChessPlayer2[idSelected - 66 - 16]->setSelected(false);
+                else
+                    listChessPlayer1[idSelected - 66]->setSelected(false);
             listChessPlayer1[idSelecting - 66]->setSelected(true);
             idSelected = idSelecting;
         }
         //
         else {
             if (idSelecting == idSelected) {
-                listChessPlayer2[idSelected - 66 - 16]->setSelected(false);
+                listChessPlayer2[idSelected - 66 - (idSelected >= 82 ? 16 : 0)]->setSelected(false);
                 // idSelecting = 0;
                 piece_chosen = false;
                 return;
             }
             if (idSelected >= 66)
-                listChessPlayer2[idSelecting - 66 - 16]->setSelected(false);
-            listChessPlayer2[idSelected - 66 - 16]->setSelected(true);
+                if (idSelected >= 82)
+                    listChessPlayer2[idSelected - 66 - 16]->setSelected(false);
+                else
+                    listChessPlayer1[idSelected - 66]->setSelected(false);
+            listChessPlayer2[idSelecting - 66 - 16]->setSelected(true);
             idSelected = idSelecting;
         }
         // listObsdwject[res - 66 + 1]->setSelected(true);
