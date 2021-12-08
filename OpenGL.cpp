@@ -10,6 +10,7 @@
 #include "header/game.h"
 #include "header/model.h"
 #include "header/object.h"
+#include "header/player.h"
 #include "header/shader.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include <iostream>
@@ -55,6 +56,7 @@ int turn = 0;
 bool piece_chosen = false;
 // Đối tượng game
 Game game;
+Player *player1 = game.getPlayer(1), *player2 = game.getPlayer(2);
 
 // listModel
 vector<Model *> listModel;
@@ -275,27 +277,31 @@ void processSelection(int xx, int yy) {
     int resTemp = res;
     std::cout << "Clicked on:" << res << std::endl;
 
-    if (res == 0)
+    if (res == 0) {
+        // TODO
         return;
+    }
 
     if (res >= 1 && res <= 65) {
         // std::cout << "Clicked on:" << res << std::endl;
         res--;
-        int xLocation = res % 8 + 1, yLocation = res / 8 + 1;
+        int xLocation = res / 8, yLocation = res % 8;
         // x Là ô chũ, y là ô số
 
         std::cout << "Ô: ("
-                  << "abcdefgh"[xLocation - 1] << ", " << yLocation << ")\n";
+                  << "abcdefgh"[yLocation] << ", " << xLocation + 1 << ")\n";
         // Chọn ô xong sẽ quyết định con cờ di chuyển hay không
         //  TẠM KHÓA
-        //  if(piece_chosen){
-        //      if(turn%2==0){
-        //          listChessPlayer1[idSelecting - 66]->Move(xLocation, yLocation);
-        //      }else{
-        //          listChessPlayer2[idSelecting - 66 - 16]->Move(xLocation, yLocation);
-        //      }
-        //      turn++;
-        //  }
+
+        if (piece_chosen) {
+            game.tryMovement(idSelected, xLocation, yLocation);
+            // if (turn % 2 == 0) {
+            //     listChessPlayer1[idSelecting - 66]->Move(xLocation, yLocation);
+            // } else {
+            //     listChessPlayer2[idSelecting - 66 - 16]->Move(xLocation, yLocation);
+            // }
+            // turn++;
+        }
     }
     if (res >= 66) {
         idSelecting = res;
@@ -304,28 +310,38 @@ void processSelection(int xx, int yy) {
         // Click piece 2 times then remove selection
         if (idSelecting == idSelected) {
             if (res <= 66 + 15)
-                listChessPlayer1[idSelected - 66]->setSelected(false);
+                player1->getChessById(idSelected)->setSelected(false);
             else
-                listChessPlayer2[idSelected - 66 - 16]->setSelected(false);
+                player2->getChessById(idSelected)->setSelected(false);
             // idSelecting = 0;
             piece_chosen = false;
             return;
         }
 
         // Click another piece then remove selection
-        if (idSelected >= 66)
+        if (idSelected >= 66) {
             if (idSelected >= 82)
-                listChessPlayer2[idSelected - 66 - 16]->setSelected(false);
+                player2->getChessById(idSelected)->setSelected(false);
             else
-                listChessPlayer1[idSelected - 66]->setSelected(false);
+                player1->getChessById(idSelected)->setSelected(false);
+        }
 
         if (res <= 66 + 15)
-            listChessPlayer1[idSelecting - 66]->setSelected(true);
+            player1->getChessById(idSelecting)->setSelected(true);
         else
-            listChessPlayer2[idSelecting - 66 - 16]->setSelected(true);
+            player2->getChessById(idSelecting)->setSelected(true);
+
+        if (piece_chosen) {  // condition TODO
+            glm::vec2 pos;
+            if (res <= 66 + 15)
+                pos = player1->getChessById(idSelecting)->getPosition();
+            else
+                pos = player2->getChessById(idSelecting)->getPosition();
+            game.tryMovement(idSelected, pos[0], pos[1]);
+        }
         idSelected = idSelecting;
+        piece_chosen = true;
     }
-    piece_chosen = true;
 }
 
 void setTitleFPS(GLFWwindow *window, int nbFrames) {

@@ -12,7 +12,7 @@ protected:
     float baseX = -1.32f, baseY = -.006f, baseZ = 1.32f;
     float rangeObject = 0.377f;  // Khoảng cách giữa các quân cờ (chỉnh theo ý muốn)
 
-    // Toạ độ trong bàn cờ (tính từ 1, 1)
+    // Toạ độ trong bàn cờ (tính từ 0 - 7, a - h)
     int posX, posY;
 
     // Tọa độ có thể di chuyển đến
@@ -41,19 +41,19 @@ public:
     glm::vec2 getPosition() { return glm::vec2(posX, posY); }
 
     // Tính toán các tọa độ có thể đi đến
-    virtual void computeAvailableMovements(std::vector<Object *> &owner,
-                                           std::vector<Object *> &opponent){};
+    virtual void computeAvailableMovements(std::vector<Chess *> &own, std::vector<Chess *> &opp){};
+
+    std::vector<std::vector<int> > getAvailableMovements() { return availableMovements; }
 
     glm::vec3 computeRealPosition() {
-        return glm::vec3(baseX + (this->posX - 1) * rangeObject, baseY,
-                         baseZ - (this->posY - 1) * rangeObject);
+        return glm::vec3(baseX + this->posY * rangeObject, baseY, baseZ - this->posX * rangeObject);
     }
 
     // Tính toán toạ độ thực của quân cờ
     glm::vec3 computeRealPosition(int posX, int posY) {
         this->posX = posX;
         this->posY = posY;
-        return glm::vec3(baseX + (posX - 1) * rangeObject, baseY, baseZ - (posY - 1) * rangeObject);
+        return this->computeRealPosition();
     }
 
     // Hàm render cho class Chess
@@ -126,4 +126,23 @@ public:
             glEnable(GL_DEPTH_TEST);
         }
     }
+
+    bool canMoveTo(int targetX, int targetY) {
+        std::cout << "Available Movements: " << availableMovements.size() << std::endl;
+        for (unsigned int i = 0; i < availableMovements.size(); i++) {
+            if (availableMovements[i][0] == targetX && availableMovements[i][1] == targetY) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void moveTo(int targetX, int targetY) {
+        posX = targetX;
+        posY = targetY;
+    }
+
+    void moveTo(glm::vec2 pos) { moveTo(pos[0], pos[1]); }
+
+    void clearAvailableMovements() { availableMovements.clear(); }
 };
