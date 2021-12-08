@@ -300,42 +300,32 @@ void processSelection(int xx, int yy) {
     if (res >= 66) {
         idSelecting = res;
         std::cout << "idSelecting = " << idSelecting << " selected: " << idSelected << std::endl;
-        if (res <= 66 + 15) {
-            // Click piece 2 times then remove selection
-            if (idSelecting == idSelected) {
-                listChessPlayer1[idSelected - 66 - (idSelected >= 82 ? 16 : 0)]->setSelected(false);
-                // idSelecting = 0;
-                piece_chosen = false;
-                return;
-            }
-            // Click another piece then remove selection
-            if (idSelected >= 66)
-                if (idSelected >= 82)
-                    listChessPlayer2[idSelected - 66 - 16]->setSelected(false);
-                else
-                    listChessPlayer1[idSelected - 66]->setSelected(false);
+
+        // Click piece 2 times then remove selection
+        if (idSelecting == idSelected) {
+            if (res <= 66 + 15)
+                listChessPlayer1[idSelected - 66]->setSelected(false);
+            else
+                listChessPlayer2[idSelected - 66 - 16]->setSelected(false);
+            // idSelecting = 0;
+            piece_chosen = false;
+            return;
+        }
+
+        // Click another piece then remove selection
+        if (idSelected >= 66)
+            if (idSelected >= 82)
+                listChessPlayer2[idSelected - 66 - 16]->setSelected(false);
+            else
+                listChessPlayer1[idSelected - 66]->setSelected(false);
+
+        if (res <= 66 + 15)
             listChessPlayer1[idSelecting - 66]->setSelected(true);
-            idSelected = idSelecting;
-        }
-        //
-        else {
-            if (idSelecting == idSelected) {
-                listChessPlayer2[idSelected - 66 - (idSelected >= 82 ? 16 : 0)]->setSelected(false);
-                // idSelecting = 0;
-                piece_chosen = false;
-                return;
-            }
-            if (idSelected >= 66)
-                if (idSelected >= 82)
-                    listChessPlayer2[idSelected - 66 - 16]->setSelected(false);
-                else
-                    listChessPlayer1[idSelected - 66]->setSelected(false);
+        else
             listChessPlayer2[idSelecting - 66 - 16]->setSelected(true);
-            idSelected = idSelecting;
-        }
-        // listObsdwject[res - 66 + 1]->setSelected(true);
-        piece_chosen = true;
+        idSelected = idSelecting;
     }
+    piece_chosen = true;
 }
 
 void setTitleFPS(GLFWwindow *window, int nbFrames) {
