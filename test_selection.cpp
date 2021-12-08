@@ -6,6 +6,8 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "header/camera.h"
+#include "header/chess.h"
+#include "header/game.h"
 #include "header/model.h"
 #include "header/object.h"
 #include "header/shader.h"
@@ -46,13 +48,16 @@ void setTitleFPS(GLFWwindow *window, int nbFrames);
 // Đối tượng đang chọn
 int idSelected;
 
-// Danh sách model
-vector<Model> listModel;
+// Đối tượng game
+Game game;
 
-// Danh sách tất cả đối tượng
-vector<Object> listObjectPlayer1, listObjectPlayer2;
+// listModel
+vector<Model *> listModel;
+
+vector<Chess *> listChessPlayer1, listChessPlayer2;
+
 // Đối tượng bảng
-Object board;
+Object *board;
 
 // 4 biến hỗ trợ selection
 int window_width = SCR_WIDTH, window_height = SCR_HEIGHT;
@@ -110,68 +115,14 @@ int main() {
     glStencilFunc(GL_ALWAYS, 0, 0xFF);
     glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
-    // load models
-    // -----------
-    listModel.push_back(Model("./models/Board.obj"));
-    listModel.push_back(Model("./models/Rook.obj"));
-    listModel.push_back(Model("./models/Knight.obj"));
-    listModel.push_back(Model("./models/Bishop.obj"));
-    listModel.push_back(Model("./models/King.obj"));
-    listModel.push_back(Model("./models/Queen.obj"));
-    listModel.push_back(Model("./models/Pawn.obj"));
-    listModel.push_back(Model("./models/Plate.obj"));
-    // Model ourModel("backpack.obj");
-
-    // Set Object
-    board = Object(0, listModel[0], true, glm::vec3(0.0f, 0.0f, 0.0f), false, false);
-
-    // Set Chess for Player 1
-    // Vị trí khởi đầu
-    float baseX = -1.32f, baseY = -.006f, baseZ = 1.32f;
-    float rangeObject = 0.377f;  // Khoảng cách giữa các quân cờ (chỉnh theo ý muốn)
-    int indexModel;
-    Object obj;
-    for (int index = 0; index < 16; ++index) {
-        // id, model, checkTexture, position, isFirstPlayer, canSelect
-        // Id của cờ player1 từ 66 -> 66 + 8
-        // Ánh xạ index thành model
-        // 0, 1, 2, 3, 4 -> 1, 2, 3, 4, 5
-        // 5, 6, 7 => 3, 2, 1
-        // 8 - 15 -> 7
-        int id = index + 66;
-        if (index >= 8)
-            indexModel = 6;
-        else if (index <= 4)
-            indexModel = index + 1;
-        else
-            indexModel = 8 - index;
-        listObjectPlayer1.push_back(Object(
-            id, listModel[indexModel], false,
-            glm::vec3(baseX + index % 8 * rangeObject, baseY, baseZ - index / 8 * rangeObject),
-            false, true));
-        // listObject.back().setSelected(true);
-    }
-
-    // Set Chess for Player 2
-    baseX = 1.34f, baseY = -.006f, baseZ = -1.34f;
-    for (int index = 0; index < 16; ++index) {
-        // id, model, checkTexture, position, isFirstPlayer, canSelect
-        // Id của cờ player1 từ 66 + 8 -> 66 + 16
-        int id = index + 66 + 16;
-        if (index >= 8)
-            indexModel = 6;
-        else if (index <= 4)
-            indexModel = index + 1;
-        else
-            indexModel = 8 - index;
-        listObjectPlayer2.push_back(Object(
-            id, listModel[indexModel], false,
-            glm::vec3(baseX - index % 8 * rangeObject, baseY, baseZ + index / 8 * rangeObject),
-            true, true));
-    }
-
     // Get framebuffer size for varying window size
     glfwGetFramebufferSize(window, &framebuffer_width, &framebuffer_height);
+
+    game.GameInit();
+    listModel = game.getListModel();
+    listChessPlayer1 = game.getPlayer(1)->listChess;
+    listChessPlayer2 = game.getPlayer(2)->listChess;
+    board = game.getBoard();
 
     // draw in wireframe
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -250,17 +201,17 @@ int main() {
             model = glm::scale(model, glm::vec3(scale, scale, scale));
             // it's a bit too big for our scene, so scale it down
             ourShader.setMat4("model", model);
-            listModel[7].Draw(ourShader);  // listModel[7] Plate
+            listModel[7]->Draw(ourShader);  // listModel[7] Plate
         }
 
         // Vẽ bảng
-        board.render(ourShader, stencilShader, lightPos);
+        board->render(ourShader, stencilShader, lightPos);
 
         // Vẽ cờ cho người 1chơi 1
-        for (auto &object : listObjectPlayer1) object.render(ourShader, stencilShader, lightPos);
+        for (auto &chess : listChessPlayer1) chess->render(ourShader, stencilShader, lightPos);
 
         // Vẽ cờ cho người 2chơi 2
-        for (auto &object : listObjectPlayer2) object.render(ourShader, stencilShader, lightPos);
+        for (auto &chess : listChessPlayer2) chess->render(ourShader, stencilShader, lightPos);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse
         // moved etc.)
@@ -320,10 +271,10 @@ void processSelection(int xx, int yy) {
     std::cout << "Clicked on:" << res << std::endl;
     if (res >= 66) {
         if (res <= 66 + 15)
-            listObjectPlayer1[idSelected - 66].setSelected(true);
+            listChessPlayer1[idSelected - 66]->setSelected(true);
         //
         else
-            listObjectPlayer2[idSelected - 66 - 16].setSelected(true);
+            listChessPlayer2[idSelected - 66 - 16]->setSelected(true);
         // listObsdwject[res - 66 + 1].setSelected(true);
     } else if (res >= 1) {
         // std::cout << "Clicked on:" << res << std::endl;

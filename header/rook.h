@@ -1,17 +1,19 @@
+#pragma once
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "object.h"
+#include "chess.h"
 
-class Rook : public Object {
+class Rook : public Chess {
 private:
 public:
     Rook(){};
+    Rook(int id, Model *model, bool checkTexture, int posX, int posY, bool isFirstPlayer)
+        : Chess(id, model, checkTexture, posX, posY, isFirstPlayer){};
     ~Rook(){};
 
-    virtual void computeAvailableMovements(std::vector<Object*> owner,
-                                           std::vector<Object*> opponent) {
+    virtual void computeAvailableMovements(std::vector<Chess *> own, std::vector<Chess *> opp) {
         std::vector<int> pos = std::vector<int>();
         pos.resize(2);
         pos[0] = posX + 1;
@@ -95,4 +97,4 @@ public:
             pos[1]--;
         }
     };
-}
+};

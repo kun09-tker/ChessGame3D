@@ -9,9 +9,9 @@
 #include "rook.h"
 
 class Player {
-private:
-    // Danh sách cờ của người chơi
-    std::vector<Chess *> listChess;
+protected:
+    // biến xác định có rotate cờ hay không
+    bool isRotated180 = false;
 
     // Con trỏ đến quân vua
     King *king;
@@ -20,5 +20,8 @@ public:
     Player(){};
     ~Player(){};
 
-    std::vector<Chess *> getListChess() { return listChess; }
+    // Danh sách cờ của người chơi
+    std::vector<Chess *> listChess;
+
+    // std::vector<Chess *> *getListChess() { return listChess; }
 };
