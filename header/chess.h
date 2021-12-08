@@ -163,17 +163,24 @@ public:
     // Dùng để tạo tọa độ giống như di chuyển vào push vào vector animation
     void Move(int finalX, int finalZ) {
         // Vị trí xuất phát
+        int startX = posX;
+        int startZ = posY;
+        std::cout<<"Start: "<<posX<<" "<<posY<<std::endl;
+        std::cout<<"Final: "<<finalX<<" "<<finalZ<<std::endl;
         float x = this->position.x;
         float y = this->position.y;
         float z = this->position.z;
         std::cout<<"X: "<<x<<" Y: "<<y<<" Z: "<<z<<endl;	
-        //Đích đến
-        float X = abs(finalX - this->posX)*0.377;
-        float Y = y;
-        float Z = ((abs(finalZ-this->posY)) * 0.377);
         //step
-        float stepZ = Z/50;
-        float stepX = X/50;
+        float stepZ = abs(finalX-this->posX)*0.377/50;
+        float stepX = abs(finalZ-this->posY)*0.377/50;
+        //Đích đến
+        glm::vec3 target = this->computeRealPosition(finalX, finalZ);
+        float X = abs(target[0]-x);
+        float Y = y;
+        float Z = abs(target[2]-z);
+        std::cout<<"X: "<<X<<" Y: "<<Y<<" Z: "<<Z<<endl;
+        
         // Direction
         int directionZ = 1;
         int directionX = 1;
@@ -183,13 +190,14 @@ public:
         std::cout <<"z,Z: "<< stepZ << " " << Z << std::endl;
         float a = Z/2;
         std::cout <<"a: "<< a << std::endl;
-        if(finalZ < this->posY){
+        if(finalX < startX){
             directionZ = -1;
             z_temp = 2*a + z;
         }
-        if(finalX < this->posX){
+        if(finalZ < startZ){
             directionX = -1;
         }
+        std::cout <<"Direct" << directionZ << " X: " << directionX << std::endl;
         while(Z>0){
             // std::cout <<"Vao White" << std::endl;
             z -= stepZ*directionZ;
