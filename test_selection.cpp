@@ -45,8 +45,10 @@ glm::vec3 lightPos(1.2f, 2.0f, 2.0f);
 // Show FPS
 void setTitleFPS(GLFWwindow *window, int nbFrames);
 
-// Đối tượng đang chọn
+// Đối tượng đã chọn
 int idSelected;
+// Đối tượng đang chọn
+int idSelecting = 0;
 
 // Đối tượng game
 Game game;
@@ -267,16 +269,15 @@ void processSelection(int xx, int yy) {
     glReadPixels(xx * x_scale, viewport[3] - yy * y_scale, 1, 1, GL_STENCIL_INDEX, GL_UNSIGNED_INT,
                  &res);
 
-    idSelected = res;
+    int resTemp = res;
     std::cout << "Clicked on:" << res << std::endl;
-    if (res >= 66) {
-        if (res <= 66 + 15)
-            listChessPlayer1[idSelected - 66]->setSelected(true);
-        //
-        else
-            listChessPlayer2[idSelected - 66 - 16]->setSelected(true);
-        // listObsdwject[res - 66 + 1].setSelected(true);
-    } else if (res >= 1) {
+    // Click on backround to remove selection
+    if (res == 0) {
+        idSelected = idSelecting;
+        res = idSelecting;
+    }
+    idSelecting = res;
+    if (res >= 1 && res <= 65) {
         // std::cout << "Clicked on:" << res << std::endl;
         res--;
         int xLocation = res % 8 + 1, yLocation = res / 8 + 1;
@@ -284,6 +285,53 @@ void processSelection(int xx, int yy) {
 
         std::cout << "Ô: ("
                   << "abcdefgh"[xLocation - 1] << ", " << yLocation << ")\n";
+        // remove previous selection
+        if (resTemp != idSelecting) {
+            res = idSelecting;
+            idSelected = idSelecting;
+        }
+    }
+    if (res >= 66) {
+        std::cout << "idSelecting = " << idSelecting << " selected: " << idSelected << std::endl;
+        // // Player click piece of opponent then remove selection
+        // if(res <= 66 +15 && turn=="player2"){
+        //     res = idSelecting;
+        //     idSelected = idSelecting;
+        // }
+        // else if(res >= 66 + 16 && turn=="player1"){
+        //     res = idSelecting;
+        //     idSelected = idSelecting;
+        // }
+        if (res <= 66 + 15) {
+            // Click piece 2 times then remove selection
+            if (idSelecting == idSelected) {
+                listChessPlayer1[idSelected - 66]->setSelected(false);
+                idSelecting = 0;
+                return;
+            }
+            // Click another piece then remove selection
+            else if (idSelecting != idSelected) {
+                listChessPlayer1[idSelected - 66]->setSelected(false);
+            }
+            listChessPlayer1[idSelecting - 66]->setSelected(true);
+            idSelecting = idSelected;
+        }
+        //
+        else {
+            // Click piece 2 times then remove selection
+            if (idSelecting == idSelected) {
+                listChessPlayer2[idSelected - 66 - 16]->setSelected(false);
+                idSelecting = 0;
+                return;
+            }
+            // Click another piece then remove selection
+            else if (idSelecting != idSelected) {
+                listChessPlayer2[idSelected - 66 - 16]->setSelected(false);
+            }
+            listChessPlayer2[idSelected - 66 - 16]->setSelected(true);
+            idSelecting = idSelected;
+        }
+        // listObsdwject[res - 66 + 1].setSelected(true);
     }
 }
 
