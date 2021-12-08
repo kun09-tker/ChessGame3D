@@ -22,6 +22,8 @@ protected:
     glm::vec3 blueColor = glm::vec3(0.98f, 0.95f, 0.42f);
     glm::vec3 yellowColor = glm::vec3(0.58f, 0.7f, 0.99f);
 
+    std::vector<glm::vec3> animations;
+
 public:
     Object(){};
     Object(int id, bool canSelect) {
@@ -79,6 +81,15 @@ public:
 
         // render the loaded model
         glm::mat4 model = glm::mat4(1.0f);
+
+
+        //Thay đổi vị trí của con cờ giống như di chuyển
+        if(animations.size()!=0){
+            this->position = animations[0];
+            animations.erase(animations.begin());
+        }
+
+
         model = glm::translate(model, this->position);
         // translate it down so it's at the center of the scene
         model = glm::scale(model, glm::vec3(0.005f, 0.005f, 0.005f));
@@ -93,5 +104,11 @@ public:
 
         // if (this->isSelected)
         //     this->renderSelection(stencilShader);
+    }
+    //Dùng để tạo tọa độ giống như di chuyển vào push vào vector animation
+    void Move(int finalX,int finalZ){
+        float x = position.x;
+        float y = position.y;
+        float z = position.z;
     }
 };

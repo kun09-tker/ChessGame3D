@@ -49,7 +49,10 @@ void setTitleFPS(GLFWwindow *window, int nbFrames);
 int idSelected;
 // Đối tượng đang chọn
 int idSelecting = 0;
-
+//Lượt
+int turn = 0;
+// Đã chọn cờ
+bool piece_chosen = false;
 // Đối tượng game
 Game game;
 
@@ -288,6 +291,16 @@ void processSelection(int xx, int yy) {
             res = idSelecting;
             idSelected = idSelecting;
         }
+        //Chọn ô xong sẽ quyết định con cờ di chuyển hay không
+        // TẠM KHÓA
+        // if(piece_chosen){
+        //     if(turn%2==0){
+        //         listChessPlayer1[idSelecting - 66]->Move(xLocation, yLocation);
+        //     }else{
+        //         listChessPlayer2[idSelecting - 66 - 16]->Move(xLocation, yLocation);
+        //     }
+        //     turn++;
+        // }
     }
     if (res >= 66) {
         std::cout << "idSelecting = " << idSelecting << " selected: " << idSelected << std::endl;
@@ -295,6 +308,7 @@ void processSelection(int xx, int yy) {
             if (idSelecting == idSelected) {
                 listChessPlayer1[idSelected - 66]->setSelected(false);
                 idSelecting = 0;
+                piece_chosen = false;
                 return;
             } else if (idSelecting != idSelected) {
                 listChessPlayer1[idSelecting - 66]->setSelected(false);
@@ -307,6 +321,7 @@ void processSelection(int xx, int yy) {
             if (idSelecting == idSelected) {
                 listChessPlayer2[idSelected - 66 - 16]->setSelected(false);
                 idSelecting = 0;
+                piece_chosen = false;
                 return;
             } else if (idSelecting != idSelected) {
                 listChessPlayer2[idSelecting - 66 - 16]->setSelected(false);
@@ -315,6 +330,7 @@ void processSelection(int xx, int yy) {
             idSelecting = idSelected;
         }
         // listObsdwject[res - 66 + 1]->setSelected(true);
+        piece_chosen = true;
     }
 }
 
