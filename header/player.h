@@ -42,7 +42,7 @@ public:
 
     void computeAvailableMovements(std::vector<Chess *> own, std::vector<Chess *> opp) {
         for (unsigned int i = 0; i < listChess.size(); i++) {
-            // listChess[i]->clearAvailableMovements();
+            listChess[i]->clearAvailableMovements();
             listChess[i]->computeAvailableMovements(own, opp);
         }
     }
