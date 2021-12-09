@@ -50,8 +50,6 @@ void setTitleFPS(GLFWwindow *window, int nbFrames);
 int idSelected;
 // Đối tượng đang chọn
 int idSelecting = 0;
-// Lượt
-int turn = 0;
 // Đã chọn cờ
 bool piece_chosen = false;
 // Đối tượng game
@@ -278,7 +276,7 @@ void processSelection(int xx, int yy) {
     std::cout << "Clicked on:" << res << std::endl;
 
     if (res == 0) {
-        // TODO
+        game.setSelected(idSelected, false);
         return;
     }
 
@@ -294,6 +292,7 @@ void processSelection(int xx, int yy) {
         //  TẠM KHÓA
 
         if (piece_chosen) {
+            std::cout << "selected: " << idSelected << std::endl;
             game.tryMovement(idSelected, xLocation, yLocation);
             // turn++;
             piece_chosen = false;
@@ -305,29 +304,21 @@ void processSelection(int xx, int yy) {
 
         // Click piece 2 times then remove selection
         if (idSelecting == idSelected) {
-            if (res <= 66 + 15)
-                player1->getChessById(idSelected)->setSelected(false);
-            else
-                player2->getChessById(idSelected)->setSelected(false);
+            std::cout << "swap" << std::endl;
+            game.swapSelected(idSelecting);
             // idSelecting = 0;
-            piece_chosen = false;
+            piece_chosen = !piece_chosen;
             return;
         }
 
         // Click another piece then remove selection
-        if (idSelected >= 66) {
-            if (idSelected >= 82)
-                player2->getChessById(idSelected)->setSelected(false);
-            else
-                player1->getChessById(idSelected)->setSelected(false);
-        }
+        std::cout << "remove" << std::endl;
+        game.setSelected(idSelected, false);
 
-        if (res <= 66 + 15)
-            player1->getChessById(idSelecting)->setSelected(true);
-        else
-            player2->getChessById(idSelecting)->setSelected(true);
+        game.setSelected(idSelecting, true);
 
-        if (piece_chosen) {  // condition TODO
+        if (piece_chosen && !game.IsSamePlayer(idSelecting, idSelected)) {  // condition TODO
+            std::cout << "move" << std::endl;
             glm::vec2 pos;
             if (res <= 66 + 15)
                 pos = player1->getChessById(idSelecting)->getPosition();

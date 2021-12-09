@@ -218,6 +218,5 @@ public:
             //     break;
             // }
         }
-        setPos(finalX, finalZ);
     }
 };

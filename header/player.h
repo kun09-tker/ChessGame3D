@@ -19,12 +19,13 @@ protected:
 
 public:
     Player(){};
+    Player(bool isFirstPlayer) { this->isFirstPlayer = isFirstPlayer; }
     ~Player(){};
 
     // Danh sách cờ của người chơi
     std::vector<Chess *> listChess;
 
-    Chess *getChessById(int Id) { return listChess[Id - 66 - (isFirstPlayer ? 16 : 0)]; }
+    Chess *getChessById(int Id) { return listChess[Id - 66 - (isFirstPlayer ? 0 : 16)]; }
 
     std::vector<Chess *> getChess() { return listChess; }
 

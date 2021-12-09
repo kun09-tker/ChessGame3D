@@ -27,16 +27,36 @@ protected:
 
 public:
     Game() {
-        player1 = new Player();
-        player2 = new Player();
+        player1 = new Player(true);
+        player2 = new Player(false);
     };
 
     vector<Model *> getListModel() { return listModel; }
 
     Object *getBoard() { return board; }
 
+    int getTurn() { return turn; }
+
     // get player 1 or 2
     Player *getPlayer(int index) { return index == 1 ? player1 : player2; }
+
+    void setSelected(int ChessID, bool state) {
+        if (ChessID >= 66) {
+            if (ChessID <= 66 + 15)
+                player1->getChessById(ChessID)->setSelected(state);
+            else
+                player2->getChessById(ChessID)->setSelected(state);
+        }
+    }
+
+    void swapSelected(int ChessID) {
+        if (ChessID >= 66) {
+            if (ChessID <= 66 + 15)
+                player1->getChessById(ChessID)->swapSelected();
+            else
+                player2->getChessById(ChessID)->swapSelected();
+        }
+    }
 
     void GameInit() {
         // load models
@@ -121,29 +141,38 @@ public:
         player2->computeAvailableMovements(player2->getChess(), player1->getChess());
     }
 
+    bool IsSamePlayer(int ChessID1, int ChessID2) {
+        return (ChessID1 <= 82 && ChessID2 <= 82) || (ChessID1 > 82 && ChessID2 > 82);
+    }
+
     void tryMovement(int IDchess, int posX, int posY) {
         Player *current = (turn == 1) ? player1 : player2;
         Player *opponent = (turn == 1) ? player2 : player1;
         Chess *current_piece = current->getChessById(IDchess);
+
+        // Kiểm tra phải lượt của player không
+        if ((turn == 1 && IDchess > 82) || (turn == 2 && IDchess <= 82))
+            return;
+
         if (current_piece != nullptr) {
-            std::cout << "success 1" << std::endl;
             if (current_piece->canMoveTo(posX, posY)) {
                 glm::vec2 tempPos = current_piece->getPosition();
                 current_piece->moveTo(posX, posY);
                 opponent->computeAvailableMovements(opponent->getChess(), current->getChess());
-                std::cout << "success 2" << std::endl;
+                std::cout << "success move to " << posX << " " << posY << std::endl;
                 if (check(current, opponent, current->getKing()->getPosition()).size() == 0) {
-                    current_piece->moveTo(tempPos);
+                    // current_piece->moveTo(tempPos);
                     std::cout << "success 3" << std::endl;
                     // ejectPiece(posX, posY);
                     // board.movePieceTo(current_piece->getVaoID(), posX, posY);
-                    // changeTurn();
+                    changeTurn();
                 } else {
-                    current_piece->moveTo(tempPos);
+                    // current_piece->moveTo(tempPos);
                     opponent->computeAvailableMovements(opponent->getChess(), current->getChess());
                     std::cout << "success 4" << std::endl;
                 }
-            }
+            } else
+                std::cout << "can't move to " << posX << " " << posY << std::endl;
         }
     }
 

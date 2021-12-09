@@ -45,6 +45,7 @@ public:
     int getId() { return id; }
     void setSelected(bool selected) { isSelected = selected; }
     bool getSelected() { return isSelected; }
+    bool swapSelected() { return isSelected = !isSelected; }
 
     // Hàm render cho class Object
     virtual void render(Shader ourShader, Shader stencilShader, glm::vec3 lightPos) {
@@ -80,9 +81,6 @@ public:
         // render the loaded model
         glm::mat4 model = glm::mat4(1.0f);
 
-
-
-
         model = glm::translate(model, this->position);
         // translate it down so it's at the center of the scene
         model = glm::scale(model, glm::vec3(0.005f, 0.005f, 0.005f));
@@ -98,5 +96,4 @@ public:
         // if (this->isSelected)
         //     this->renderSelection(stencilShader);
     }
-    
 };
