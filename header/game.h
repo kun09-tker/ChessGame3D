@@ -41,22 +41,30 @@ public:
     Player *getPlayer(int index) { return index == 1 ? player1 : player2; }
 
     void setSelected(int ChessID, bool state) {
+        Chess *chess;
         if (ChessID >= 66) {
-            if (ChessID <= 66 + 15)
-                player1->getChessById(ChessID)->setSelected(state);
+            if (ChessID <= 81)
+                chess = player1->getChessById(ChessID);
             else
-                player2->getChessById(ChessID)->setSelected(state);
+                chess = player2->getChessById(ChessID);
+            if (chess != nullptr)
+                chess->setSelected(state);
         }
     }
 
     void swapSelected(int ChessID) {
+        Chess *chess;
         if (ChessID >= 66) {
-            if (ChessID <= 66 + 15)
-                player1->getChessById(ChessID)->swapSelected();
+            if (ChessID <= 81)
+                chess = player1->getChessById(ChessID);
             else
-                player2->getChessById(ChessID)->swapSelected();
+                chess = player2->getChessById(ChessID);
+            if (chess != nullptr)
+                chess->swapSelected();
         }
     }
+
+    bool TrueChess(int ChessID) { return turn == 1 ? (ChessID <= 81) : (ChessID > 81); }
 
     void GameInit() {
         // load models
@@ -146,13 +154,13 @@ public:
     }
 
     bool tryMovement(int IDchess, int posX, int posY) {
+        // Kiểm tra phải lượt của player không
+        if ((turn == 1 && IDchess > 81) || (turn == 2 && IDchess <= 81))
+            return false;
+
         Player *current = (turn == 1) ? player1 : player2;
         Player *opponent = (turn == 1) ? player2 : player1;
         Chess *current_piece = current->getChessById(IDchess);
-
-        // Kiểm tra phải lượt của player không
-        if ((turn == 1 && IDchess > 82) || (turn == 2 && IDchess <= 82))
-            return false;
 
         if (current_piece != nullptr) {
             if (current_piece->canMoveTo(posX, posY)) {
@@ -163,7 +171,7 @@ public:
                 if (check(current, opponent, current->getKing()->getPosition()).size() == 0) {
                     current_piece->moveTo(tempPos);
                     std::cout << "success move" << std::endl;
-                    // ejectPiece(posX, posY);
+                    this->ejectChess(posX, posY);
                     current_piece->Move(posX, posY);
                     changeTurn();
                 } else {
@@ -207,7 +215,7 @@ public:
             std::vector<Chess *> checkState =
                 check(player1, player2, player1->getKing()->getPosition());
             if (checkState.size() > 0) {
-                // std::cout << "\nJoueur 1, vous êtes en échec !" << std::endl;
+                std::cout << "\nPlayer 1, you are checking!" << std::endl;
                 // scene->setSelectTex(1);
                 if (checkMate(player1, player2, checkState))
                     endGame(2);
@@ -218,7 +226,7 @@ public:
             std::vector<Chess *> checkState =
                 check(player2, player1, player2->getKing()->getPosition());
             if (checkState.size()) {
-                std::cout << "\nJoueur 2, vous êtes en échec !" << std::endl;
+                std::cout << "\nPlayer 2, you are checking!" << std::endl;
                 // scene->setSelectTex(1);
                 if (checkMate(player2, player1, checkState))
                     endGame(1);
@@ -313,5 +321,36 @@ public:
         std::cout << "\nCHECK MATE!\n";
 
         return true;
+    }
+
+    void ejectChess(int x, int y) {
+        Chess *chess;
+        glm::vec2 position = glm::vec2(x, y);
+
+        for (unsigned int i = 0; i < player1->getChess().size(); i++) {
+            chess = player1->getChess()[i];
+            if (chess->getPosition()[0] == position[0] && chess->getPosition()[1] == position[1]) {
+                // scene->ejectVAO(piece->getVaoID() - 1);
+                player1->deleteChessAt(i);
+                // scene->deleteVAO(piece->getVaoID()-1);
+            }
+        }
+        for (unsigned int j = 0; j < player2->getChess().size(); j++) {
+            chess = player2->getChess()[j];
+            if (chess->getPosition()[0] == position[0] && chess->getPosition()[1] == position[1]) {
+                // scene->ejectVAO(chess->getVaoID() - 1);
+                std::cout << "Ejecting chess at " << x << ":" << y << std::endl;
+                player2->deleteChessAt(j);
+                // scene->deleteVAO(piece->getVaoID()-1);
+            }
+        }
+    }
+
+    void render(Shader *ourShader, Shader *stencilShader, glm::vec3 lightPos) {
+        // Vẽ cờ cho người 1chơi 1
+        for (auto &chess : player1->listChess) chess->render(ourShader, stencilShader, lightPos);
+
+        // Vẽ cờ cho người 2chơi 2
+        for (auto &chess : player2->listChess) chess->render(ourShader, stencilShader, lightPos);
     }
 };

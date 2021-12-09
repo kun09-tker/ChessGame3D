@@ -48,7 +48,7 @@ public:
     bool swapSelected() { return isSelected = !isSelected; }
 
     // Hàm render cho class Object
-    virtual void render(Shader ourShader, Shader stencilShader, glm::vec3 lightPos) {
+    virtual void render(Shader *ourShader, Shader *stencilShader, glm::vec3 lightPos) {
         /*
         Program là Shader
         model là model dùng để load lên
@@ -58,17 +58,17 @@ public:
         */
 
         // don't forget to enable shader before setting uniforms
-        ourShader.use();
+        ourShader->use();
 
         // thiết lập màu đối tượng
-        ourShader.setVec3("objectColor", isFirstPlayer ? blueColor : yellowColor);
+        ourShader->setVec3("objectColor", isFirstPlayer ? blueColor : yellowColor);
 
         // màu ánh sáng
-        ourShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+        ourShader->setVec3("lightColor", 1.0f, 1.0f, 1.0f);
         // vị trí
-        ourShader.setVec3("lightPos", lightPos);
+        ourShader->setVec3("lightPos", lightPos);
         // Texture
-        ourShader.setFloat("Texture", this->checkTexture);
+        ourShader->setFloat("Texture", this->checkTexture);
 
         // draw board as normal, but don't write the board to the stencil buffer, we only care
         // about the chess. We set its mask to 0x00 to not write to the stencil buffer.
@@ -90,7 +90,7 @@ public:
             model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         }
 
-        ourShader.setMat4("model", model);
+        ourShader->setMat4("model", model);
         this->model->Draw(ourShader);
 
         // if (this->isSelected)

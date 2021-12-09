@@ -65,7 +65,7 @@ public:
     }
 
     // Hàm render cho class Chess
-    virtual void render(Shader ourShader, Shader stencilShader, glm::vec3 lightPos) {
+    virtual void render(Shader *ourShader, Shader *stencilShader, glm::vec3 lightPos) {
         /*
        Program là Shader
        model là model dùng để load lên
@@ -75,17 +75,17 @@ public:
        */
 
         // don't forget to enable shader before setting uniforms
-        ourShader.use();
+        ourShader->use();
 
         // thiết lập màu đối tượng
-        ourShader.setVec3("objectColor", isFirstPlayer ? yellowColor : blueColor);
+        ourShader->setVec3("objectColor", isFirstPlayer ? yellowColor : blueColor);
 
         // màu ánh sáng
-        ourShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+        ourShader->setVec3("lightColor", 1.0f, 1.0f, 1.0f);
         // vị trí
-        ourShader.setVec3("lightPos", lightPos);
+        ourShader->setVec3("lightPos", lightPos);
         // Texture
-        ourShader.setFloat("Texture", this->checkTexture);
+        ourShader->setFloat("Texture", this->checkTexture);
 
         // draw board as normal, but don't write the board to the stencil buffer, we only care
         // about the chess. We set its mask to 0x00 to not write to the stencil buffer.
@@ -111,7 +111,7 @@ public:
             model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         }
 
-        ourShader.setMat4("model", model);
+        ourShader->setMat4("model", model);
         this->model->Draw(ourShader);
 
         if (this->isSelected) {
@@ -125,7 +125,7 @@ public:
             glStencilFunc(GL_NOTEQUAL, this->id, 0xFF);
             glStencilMask(0x00);
             glDisable(GL_DEPTH_TEST);
-            stencilShader.use();
+            stencilShader->use();
 
             // render the loaded model
             model = glm::mat4(1.0f);
@@ -136,7 +136,7 @@ public:
             }
             model = glm::scale(model, glm::vec3(0.0055f, 0.005109f, 0.0055f));
             // it's a bit too big for our scene, so scale it down
-            stencilShader.setMat4("model", model);
+            stencilShader->setMat4("model", model);
             this->model->Draw(stencilShader);
 
             glStencilMask(0xFF);

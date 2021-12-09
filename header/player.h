@@ -25,7 +25,14 @@ public:
     // Danh sách cờ của người chơi
     std::vector<Chess *> listChess;
 
-    Chess *getChessById(int Id) { return listChess[Id - 66 - (isFirstPlayer ? 0 : 16)]; }
+    Chess *getChessById(int Id) {
+        for (int i = 0; i < (int)listChess.size(); i++) {
+            if (listChess[i]->getId() == Id) {
+                return listChess[i];
+            }
+        }
+        return nullptr;
+    }
 
     std::vector<Chess *> getChess() { return listChess; }
 
@@ -38,6 +45,11 @@ public:
             // listChess[i]->clearAvailableMovements();
             listChess[i]->computeAvailableMovements(own, opp);
         }
+    }
+
+    void deleteChessAt(int index) {
+        listChess.erase(listChess.begin() + index);
+        std::cout << "size listChess: " << listChess.size() << std::endl;
     }
 
     // std::vector<Chess *> *getListChess() { return listChess; }
