@@ -29,7 +29,7 @@ const unsigned int SCR_WIDTH = 900;
 const unsigned int SCR_HEIGHT = 690;
 
 // camera
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera camera(glm::vec3(4.3f, 1.0f, 0.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -283,7 +283,6 @@ void processSelection(int xx, int yy) {
         std::cout << "Ô: ("
                   << "abcdefgh"[yLocation] << ", " << xLocation + 1 << ")\n";
         // Chọn ô xong sẽ quyết định con cờ di chuyển hay không
-        //  TẠM KHÓA
 
         if (piece_chosen) {
             std::cout << "selected: " << idSelected << std::endl;

@@ -46,7 +46,7 @@ public:
             }
         }
 
-        // Nếu chưa và vị trí Tố nằm trong bàn cờ thì
+        // Nếu chưa và vị trí Tốt nằm trong bàn cờ thì
         if (!found && pos[0] >= 0 && pos[0] < 8 && pos[1] >= 0 && pos[1] < 8) {
             availableMovements.push_back(pos);
             if ((d == -1 && posX == 6) || (d == 1 && posX == 1)) {
