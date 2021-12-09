@@ -22,7 +22,7 @@ public:
         pos.resize(2);
         pos[0] = posX + 1;
         pos[1] = posY + 1;
-        std::cout << "position begin: " << posX << " " << posY << std::endl;
+        // std::cout << "position begin: " << posX << " " << posY << std::endl;
         bool found = false;
         while (pos[0] < 8 && pos[1] < 8 && !found) {
             for (unsigned int i = 0; i < own.size(); i++) {

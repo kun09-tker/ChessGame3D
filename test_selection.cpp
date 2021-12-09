@@ -277,6 +277,7 @@ void processSelection(int xx, int yy) {
 
     if (res == 0) {
         game.setSelected(idSelected, false);
+        piece_chosen = false;
         return;
     }
 

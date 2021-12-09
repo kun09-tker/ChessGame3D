@@ -161,13 +161,13 @@ public:
                 opponent->computeAvailableMovements(opponent->getChess(), current->getChess());
                 std::cout << "success move to " << posX << " " << posY << std::endl;
                 if (check(current, opponent, current->getKing()->getPosition()).size() == 0) {
-                    // current_piece->moveTo(tempPos);
-                    std::cout << "success 3" << std::endl;
+                    current_piece->moveTo(tempPos);
+                    std::cout << "success move" << std::endl;
                     // ejectPiece(posX, posY);
-                    // board.movePieceTo(current_piece->getVaoID(), posX, posY);
+                    current_piece->Move(posX, posY);
                     changeTurn();
                 } else {
-                    // current_piece->moveTo(tempPos);
+                    current_piece->moveTo(tempPos);
                     opponent->computeAvailableMovements(opponent->getChess(), current->getChess());
                     std::cout << "success 4" << std::endl;
                 }

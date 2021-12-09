@@ -156,9 +156,8 @@ public:
     }
 
     void moveTo(int targetX, int targetY) {
-        // posX = targetX;
-        // posY = targetY;
-        this->Move(targetX, targetY);
+        posX = targetX;
+        posY = targetY;
     }
 
     void moveTo(glm::vec2 pos) { moveTo(pos[0], pos[1]); }
@@ -171,8 +170,8 @@ public:
         // Vị trí xuất phát
         int startX = posX;
         int startZ = posY;
-        std::cout << "Start: " << posX << " " << posY << std::endl;
-        std::cout << "Final: " << finalX << " " << finalZ << std::endl;
+        // std::cout << "Start: " << posX << " " << posY << std::endl;
+        // std::cout << "Final: " << finalX << " " << finalZ << std::endl;
         float x = this->position.x;
         float y = this->position.y;
         float z = this->position.z;
@@ -199,7 +198,7 @@ public:
         if (finalX == startX) {
             a = X / 2;
         }
-        std::cout << "a: " << a << std::endl;
+        // std::cout << "a: " << a << std::endl;
         if (finalX < startX) {
             directionZ = -1;
             z_temp = 2 * a + z;
@@ -208,7 +207,7 @@ public:
             directionX = -1;
             x_temp = -2 * a + x;
         }
-        std::cout << x_temp << " " << z_temp << std::endl;
+        // std::cout << x_temp << " " << z_temp << std::endl;
         // std::cout <<"Direct" << directionZ << " X: " << directionX << std::endl;
         while (Z > 0) {
             // std::cout <<"Vao White" << std::endl;
