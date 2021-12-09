@@ -99,7 +99,7 @@ public:
         // Thay đổi vị trí của con cờ giống như di chuyển
         if (this->animations.size() != 0) {
             // std::cout << "Vao animation" << std::endl;
-            usleep(0.05 * microsecond);
+            // usleep(0.05 * microsecond);
             this->position = this->animations[0];
             this->animations.erase(this->animations.begin());
         }
