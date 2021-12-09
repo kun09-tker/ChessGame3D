@@ -287,9 +287,8 @@ void processSelection(int xx, int yy) {
 
         if (piece_chosen) {
             std::cout << "selected: " << idSelected << std::endl;
-            game.tryMovement(idSelected, xLocation, yLocation);
+            piece_chosen = !game.tryMovement(idSelected, xLocation, yLocation);
             // turn++;
-            piece_chosen = false;
         }
     }
     if (res >= 66) {
