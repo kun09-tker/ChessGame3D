@@ -13,9 +13,11 @@
 #include "header/player.h"
 #include "header/shader.h"
 #define STB_IMAGE_IMPLEMENTATION
+#include <filesystem>
 #include <iostream>
 
 #include "header/stb_image.h"
+namespace fs = std::filesystem;
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 // void mouse_callback(GLFWwindow *window, double xpos, double ypos);
@@ -29,7 +31,7 @@ const unsigned int SCR_WIDTH = 900;
 const unsigned int SCR_HEIGHT = 690;
 
 // camera
-Camera camera(glm::vec3(4.3f, 1.0f, 0.0f));
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -66,6 +68,29 @@ Object *board;
 int window_width = SCR_WIDTH, window_height = SCR_HEIGHT;
 int framebuffer_width, framebuffer_height;
 
+unsigned int loadCubemap(vector<std::string> faces);
+unsigned int loadTexture(const char *path);
+
+float skyboxVertices[] = {
+    // positions
+    -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f,
+    1.0f,  -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f,
+
+    -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f,
+    -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f, 1.0f,
+
+    1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,
+    1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f,
+
+    -1.0f, -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,  1.0f,
+    1.0f,  1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,
+
+    -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,
+    1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f,
+
+    -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f,
+    1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f};
+
 int main() {
     // glfw: initialize and configure
     // ------------------------------
@@ -89,6 +114,8 @@ int main() {
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     // glfwSetCursorPosCallback(window, mouse_callback);
+
+    glfwSwapInterval(0);
     glfwSetScrollCallback(window, scroll_callback);
     glfwSetMouseButtonCallback(window, mouse_button_callback);
 
@@ -112,6 +139,7 @@ int main() {
     // build and compile shaders
     Shader *ourShader = new Shader("1.model_loading.vs", "1.model_loading.fs");
     Shader *stencilShader = new Shader("stencil_color.vs", "stencil_color.fs");
+    Shader *skyboxShader = new Shader("skybox.vs", "skybox.fs");
 
     // Enable stencil buffer
     glEnable(GL_STENCIL_TEST);
@@ -124,6 +152,36 @@ int main() {
     game.GameInit();
     listModel = game.getListModel();
     board = game.getBoard();
+
+    // skybox VAO
+    unsigned int skyboxVAO, skyboxVBO;
+    glGenVertexArrays(1, &skyboxVAO);
+    glGenBuffers(1, &skyboxVBO);
+    glBindVertexArray(skyboxVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+
+    // load textures
+    // -------------
+
+    std::string parentDir = (fs::current_path().fs::path::parent_path()).string();
+
+    vector<std::string> faces{parentDir + "/ChessGame3D/textures/right.jpg",
+                              parentDir + "/ChessGame3D/textures/left.jpg",
+                              parentDir + "/ChessGame3D/textures/top.jpg",
+                              parentDir + "/ChessGame3D/textures/bottom.jpg",
+                              parentDir + "/ChessGame3D/textures/front.jpg",
+                              parentDir + "/ChessGame3D/textures/back.jpg"};
+
+    unsigned int cubemapTexture = loadCubemap(faces);
+
+    // shader configuration
+    // --------------------
+
+    skyboxShader->use();
+    skyboxShader->setInt("skybox", 0);
 
     // draw in wireframe
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -211,6 +269,27 @@ int main() {
         // Vẽ cờ
         game.render(ourShader, stencilShader, lightPos);
 
+        // draw skybox as last
+        glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal
+                                 // to depth buffer's content
+        glStencilFunc(GL_ALWAYS, 0, 0xFF);
+        glStencilMask(0xFF);
+        skyboxShader->use();
+        skyboxShader->setMat4("view", view);
+        skyboxShader->setMat4("projection", projection);
+
+        glm::mat4 trans = glm::mat4(1.0f);
+        trans = glm::translate(trans, glm::vec3(0, 0, 0));
+        trans = glm::scale(trans, glm::vec3(20, 20, 20));
+        skyboxShader->setMat4("model", trans);
+        // skybox cube
+        glBindVertexArray(skyboxVAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
+        glDepthFunc(GL_LESS);  // set depth function back to default
+
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse
         // moved etc.)
         // -------------------------------------------------------------------------------
@@ -283,6 +362,7 @@ void processSelection(int xx, int yy) {
         std::cout << "Ô: ("
                   << "abcdefgh"[yLocation] << ", " << xLocation + 1 << ")\n";
         // Chọn ô xong sẽ quyết định con cờ di chuyển hay không
+        //  TẠM KHÓA
 
         if (piece_chosen) {
             std::cout << "selected: " << idSelected << std::endl;
@@ -292,7 +372,9 @@ void processSelection(int xx, int yy) {
     }
     if (res >= 66) {
         idSelecting = res;
-        std::cout << "idSelecting = " << idSelecting << " selected: " << idSelected << std::endl;
+        std::cout << piece_chosen << " " << !game.IsSamePlayer(idSelecting, idSelected) << " "
+                  << game.TrueChess(idSelected) << " idSelecting = " << idSelecting
+                  << " selected: " << idSelected << std::endl;
 
         // Click piece 2 times then remove selection
         if (idSelecting == idSelected) {
@@ -332,4 +414,66 @@ void processSelection(int xx, int yy) {
 void setTitleFPS(GLFWwindow *window, int nbFrames) {
     std::string title = "Chess 3D - FPS: " + std::to_string(nbFrames);
     glfwSetWindowTitle(window, title.c_str());
+}
+
+// utility function for loading a 2D texture from file
+// ---------------------------------------------------
+unsigned int loadTexture(char const *path) {
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+
+    int width, height, nrComponents;
+    unsigned char *data = stbi_load(path, &width, &height, &nrComponents, 0);
+    if (data) {
+        GLenum format;
+        if (nrComponents == 1)
+            format = GL_RED;
+        else if (nrComponents == 3)
+            format = GL_RGB;
+        else if (nrComponents == 4)
+            format = GL_RGBA;
+
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        stbi_image_free(data);
+    } else {
+        std::cout << "Texture failed to load at path: " << path << std::endl;
+        stbi_image_free(data);
+    }
+
+    return textureID;
+}
+
+unsigned int loadCubemap(vector<std::string> faces) {
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+    int width, height, nrChannels;
+    for (unsigned int i = 0; i < faces.size(); i++) {
+        unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+        if (data) {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB,
+                         GL_UNSIGNED_BYTE, data);
+            stbi_image_free(data);
+        } else {
+            std::cout << "Cubemap texture failed to load at path: " << faces[i] << std::endl;
+            stbi_image_free(data);
+        }
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    // These are very important to prevent seams
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    return textureID;
 }
