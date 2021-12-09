@@ -27,8 +27,8 @@ void processSelection(int xx, int yy);
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mods);
 
 // settings
-const unsigned int SCR_WIDTH = 900;
-const unsigned int SCR_HEIGHT = 690;
+unsigned int SCR_WIDTH = 1200;
+unsigned int SCR_HEIGHT = 690;
 
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
@@ -105,7 +105,15 @@ int main() {
 
     // glfw tạo cửa sổ
     // --------------------
-    GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Bàn cờ", NULL, NULL);
+    GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+    const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+
+    SCR_WIDTH = mode->width;
+    SCR_HEIGHT = mode->height;
+    window_width = mode->width;
+    window_height = mode->height;
+
+    GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Bàn cờ", monitor, NULL);
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -299,6 +307,7 @@ int main() {
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
+    glfwDestroyWindow(window);
     glfwTerminate();
     return 0;
 }
