@@ -404,7 +404,7 @@ void tasten(unsigned char key, int xmouse, int ymouse) {
 
 
 void Init() {
-    glClearColor(0.0, 0.0, 0.0, 0.0);
+    glClearColor(1.0, 204.0/255.0, 1.0, 0.0);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_TEXTURE_2D);
 
