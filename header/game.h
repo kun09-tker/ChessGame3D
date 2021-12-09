@@ -145,14 +145,14 @@ public:
         return (ChessID1 <= 82 && ChessID2 <= 82) || (ChessID1 > 82 && ChessID2 > 82);
     }
 
-    void tryMovement(int IDchess, int posX, int posY) {
+    bool tryMovement(int IDchess, int posX, int posY) {
         Player *current = (turn == 1) ? player1 : player2;
         Player *opponent = (turn == 1) ? player2 : player1;
         Chess *current_piece = current->getChessById(IDchess);
 
         // Kiểm tra phải lượt của player không
         if ((turn == 1 && IDchess > 82) || (turn == 2 && IDchess <= 82))
-            return;
+            return false;
 
         if (current_piece != nullptr) {
             if (current_piece->canMoveTo(posX, posY)) {
@@ -171,9 +171,11 @@ public:
                     opponent->computeAvailableMovements(opponent->getChess(), current->getChess());
                     std::cout << "success 4" << std::endl;
                 }
+                return true;
             } else
                 std::cout << "can't move to " << posX << " " << posY << std::endl;
         }
+        return false;
     }
 
     std::vector<Chess *> check(Player *player, Player *opponent, glm::vec2 KingPos) {

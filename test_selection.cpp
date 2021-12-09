@@ -272,7 +272,7 @@ void processSelection(int xx, int yy) {
     glReadPixels(xx * x_scale, viewport[3] - yy * y_scale, 1, 1, GL_STENCIL_INDEX, GL_UNSIGNED_INT,
                  &res);
 
-    int resTemp = res;
+    // int resTemp = res;
     std::cout << "Clicked on:" << res << std::endl;
 
     if (res == 0) {
