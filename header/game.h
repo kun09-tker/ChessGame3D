@@ -128,9 +128,9 @@ public:
             else if (index == 2 or index == 5)
                 player2->listChess.push_back(
                     new Bishop(id, listModel[3], false, posX, posY, false));
-            else if (index == 3)
-                player2->listChess.push_back(new King(id, listModel[4], false, posX, posY, false));
             else if (index == 4)
+                player2->listChess.push_back(new King(id, listModel[4], false, posX, posY, false));
+            else if (index == 3)
                 player2->listChess.push_back(new Queen(id, listModel[5], false, posX, posY, false));
             else
                 player2->listChess.push_back(new Pawn(id, listModel[7], false, posX, posY, false));
@@ -205,11 +205,8 @@ public:
     }
 
     void changeTurn() {
-        /* Change le joueur en cours */
         turn = (turn == 1) ? 2 : 1;
         computeAvailableMovements();
-
-        // scene->unselect();
 
         if (turn == 1) {
             std::vector<Chess *> checkState =
