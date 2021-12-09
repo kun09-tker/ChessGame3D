@@ -1,9 +1,28 @@
 # 3D Chess
 
 ### How To Run
-> g++ -o OpenGL.exe OpenGL.cpp src\glad.c -lm -Wall -lopengl32 -llibassimp -lglew32 -lglu32 -lglfw3 -lgdi32 ; .\OpenGL.exe
+- **Build**
+    > g++ -o Build.exe OpenGL.cpp src\glad.c -lm -Wall -lopengl32 -llibassimp -lglew32 -lglu32 -lglfw3 -lgdi32
 
+    OpenGL.cpp (Minimize.exe)   full_screen.cpp (Fullscreen.exe)
+<!-- > g++ -o OpenGL.exe OpenGL.cpp src\glad.c -lm -Wall -lopengl32 -llibassimp -lglew32 -lglu32 -lglfw3 -lgdi32 ; .\OpenGL.exe -->
+- **Run**
 
+    ***Fullscreen***
+    > .\Fullscreen.exe
+    
+    ***Minimize***
+    > .\Minimize.exe
+
+## Visual
+- *First view*
+!["Fisrt View"](/image/1.png)
+- *Another view*
+!["Another View"](/image/2.png)
+- *Movement animation*
+!["Movement animation"](/image/3.0.png)
+- *Finish Movement*
+!["Finish"](/image/3.png)
 
 
 **Authors:** 
