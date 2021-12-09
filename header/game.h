@@ -98,18 +98,19 @@ public:
                 player1->listChess.push_back(new Knight(id, listModel[2], false, posX, posY, true));
             else if (index == 2 or index == 5)
                 player1->listChess.push_back(new Bishop(id, listModel[3], false, posX, posY, true));
-            else if (index == 3)
-                player1->listChess.push_back(new King(id, listModel[4], false, posX, posY, true));
             else if (index == 4)
+                player1->listChess.push_back(new King(id, listModel[4], false, posX, posY, true));
+            else if (index == 3)
                 player1->listChess.push_back(new Queen(id, listModel[5], false, posX, posY, true));
             else
                 player1->listChess.push_back(new Pawn(id, listModel[7], false, posX, posY, true));
         }
-        player1->setKing(player1->listChess[3]);
-        for (auto chess : player1->listChess) {
-            std::cout << "Num of available move: " << chess->getAvailableMovements().size() << " "
-                      << chess << std::endl;
-        }
+        player1->setKing(player1->listChess[4]);
+        // for (auto chess : player1->listChess) {
+        //     std::cout << "Num of available move: " << chess->getAvailableMovements().size() << "
+        //     "
+        //               << chess << std::endl;
+        // }
 
         // Set Chess for Player 2
         for (int index = 0; index < 16; ++index) {
@@ -128,9 +129,9 @@ public:
             else if (index == 2 or index == 5)
                 player2->listChess.push_back(
                     new Bishop(id, listModel[3], false, posX, posY, false));
-            else if (index == 4)
-                player2->listChess.push_back(new King(id, listModel[4], false, posX, posY, false));
             else if (index == 3)
+                player2->listChess.push_back(new King(id, listModel[4], false, posX, posY, false));
+            else if (index == 4)
                 player2->listChess.push_back(new Queen(id, listModel[5], false, posX, posY, false));
             else
                 player2->listChess.push_back(new Pawn(id, listModel[7], false, posX, posY, false));
@@ -175,9 +176,9 @@ public:
                     current_piece->Move(posX, posY);
                     changeTurn();
                 } else {
+                    std::cout << "\tInvalid move, your king is in check!\n";
                     current_piece->moveTo(tempPos);
                     opponent->computeAvailableMovements(opponent->getChess(), current->getChess());
-                    std::cout << "success 4" << std::endl;
                 }
                 return true;
             } else
@@ -253,21 +254,30 @@ public:
     }
 
     bool checkMate(Player *player, Player *opponent, std::vector<Chess *> threateningPieces) {
+        // Biến xác định checkmate
         bool isInCheckMate = true;
+        // Tọa độ của King
         glm::vec2 tempPos = player->getKing()->getPosition();
         glm::vec2 kingPos = tempPos;
         std::vector<int> temp;
 
         for (unsigned int j = 0; j < player->getKing()->getAvailableMovements().size(); j++) {
+            // Gán temp bằng tọa độ của những nước có thể đi tới
             temp = player->getKing()->getAvailableMovements()[j];
+            // Thử di chuyển King
             kingPos = glm::vec2(temp[0], temp[1]);
             player->getKing()->moveTo(kingPos[0], kingPos[1]);
+
+            // Tính toán các nước có thể đi của đối thủ
             opponent->computeAvailableMovements(opponent->getChess(), player->getChess());
+
+            // Kiểm tra có check hay không nếu cho King đi thử nước đó
             if (check(player, opponent, kingPos).size() == 0) {
                 isInCheckMate = false;
                 break;
             }
         }
+        // std::cout << "success1 checkmate" << std::endl;
         player->getKing()->moveTo(tempPos[0], tempPos[1]);
         opponent->computeAvailableMovements(opponent->getChess(), player->getChess());
 
@@ -289,31 +299,37 @@ public:
                     return false;
             }
         }
+        // std::cout << "success2 checkmate" << std::endl;
 
         kingPos = player->getKing()->getPosition();
         for (unsigned int i = 0; i < player->getChess().size(); i++) {
+            // Duyệt qua các con cờ của player
             if (player->getChess()[i]->getName() == "King")
+                // Nếu thấy King thì bỏ qua
                 continue;
+
             tempPos = player->getChess()[i]->getPosition();
+            // Tọa dộ của cờ đó
             for (unsigned int j = 0; j < player->getChess()[i]->getAvailableMovements().size();
                  j++) {
+                // Duyệt qua các nước đi có thể của cờ
                 std::vector<int> possibleMovement =
                     player->getChess()[i]->getAvailableMovements()[j];
                 player->getChess()[i]->moveTo(possibleMovement);
+                // Di chuyển nó đến
                 opponent->computeAvailableMovements(opponent->getChess(), player->getChess());
+                // cập nhật lại các nước đi có thể của đối thủ
                 if (check(player, opponent, kingPos).size() == 0) {
-                    //                std::cout << "\nAttend attend, si tu bouges ton " <<
-                    //                player.getPieces()[i]->getName() << " (" << tempPos[0] << ":"
-                    //                          << tempPos[1] << ") en " <<
-                    //                          " (" << possibleMovement[0] << ":"<<
-                    //                          possibleMovement[1]
-                    //                          << "), tu n'est plus en échec !\n" <<std::endl;
+                    // Nếu không check thì không checkmate
+                    // std::cout << player->getChess()[i]->getName() << " (" << possibleMovement[0]
+                    //           << ":" << possibleMovement[1] << ") \n";
                     player->getChess()[i]->moveTo(tempPos);
                     return false;
                 }
             }
             player->getChess()[i]->moveTo(tempPos);
         }
+        // std::cout << "success3 checkmate" << std::endl;
 
         std::cout << "\nCHECK MATE!\n";
 
