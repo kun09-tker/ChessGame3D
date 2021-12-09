@@ -171,8 +171,8 @@ public:
         // Vị trí xuất phát
         int startX = posX;
         int startZ = posY;
-        // std::cout<<"Start: "<<posX<<" "<<posY<<std::endl;
-        // std::cout<<"Final: "<<finalX<<" "<<finalZ<<std::endl;
+        std::cout<<"Start: "<<posX<<" "<<posY<<std::endl;
+        std::cout<<"Final: "<<finalX<<" "<<finalZ<<std::endl;
         float x = this->position.x;
         float y = this->position.y;
         float z = this->position.z;
@@ -191,26 +191,42 @@ public:
         int directionZ = 1;
         int directionX = 1;
         float z_temp = z;
-
-        // Khoảng cách
-        //  std::cout <<"z,Z: "<< stepZ << " " << Z << std::endl;
-        float a = Z / 2;
-        // std::cout <<"a: "<< a << std::endl;
-        if (finalX < startX) {
+        float x_temp = x;
+        
+        //Khoảng cách
+        // std::cout <<"z,Z: "<< stepZ << " " << Z << std::endl;
+        float a = Z/2;
+        if(finalX == startX){
+            a = X/2;
+        }
+        std::cout <<"a: "<< a << std::endl;
+        if(finalX < startX){
             directionZ = -1;
             z_temp = 2 * a + z;
         }
         if (finalZ < startZ) {
             directionX = -1;
+            x_temp = -2*a + x;
         }
+        std::cout<<x_temp<<" "<<z_temp<<std::endl;
         // std::cout <<"Direct" << directionZ << " X: " << directionX << std::endl;
         while (Z > 0) {
             // std::cout <<"Vao White" << std::endl;
-            z -= stepZ * directionZ;
-            Z -= stepZ;
-            x += stepX * directionX;
-            Y = y + -(0.5f / pow(a, 2.0)) * pow((z + a - z_temp), 2.0) + 0.5;
-            if (Y <= 0.005) {
+            x += stepX*directionX;
+            z -= stepZ*directionZ;
+            if(finalX == startX){
+                if(X<=0){
+                    break;
+                }
+                X-=stepX;
+                Y = y + -(0.5f/pow(a,2.0))*pow((x-a-x_temp),2.0)+0.5;    
+            }
+            else {
+                Z -= stepZ;
+                Y = y + -(0.5f/pow(a,2.0))*pow((z+a-z_temp),2.0)+0.5;  
+            }
+              
+            if(Y<=0.005){
                 Y = 0.005;
             }
             this->animations.push_back(glm::vec3(x, Y, z));
