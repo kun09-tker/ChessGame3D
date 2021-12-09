@@ -18,7 +18,7 @@
 
 class Game {
 protected:
-    int turn;
+    int turn = 1;
     Player *player1, *player2;
 
     Object *board;
@@ -150,7 +150,7 @@ public:
     }
 
     bool IsSamePlayer(int ChessID1, int ChessID2) {
-        return (ChessID1 <= 82 && ChessID2 <= 82) || (ChessID1 > 82 && ChessID2 > 82);
+        return (ChessID1 <= 81 && ChessID2 <= 81) || (ChessID1 > 81 && ChessID2 > 81);
     }
 
     bool tryMovement(int IDchess, int posX, int posY) {

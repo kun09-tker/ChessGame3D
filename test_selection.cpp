@@ -293,7 +293,9 @@ void processSelection(int xx, int yy) {
     }
     if (res >= 66) {
         idSelecting = res;
-        std::cout << "idSelecting = " << idSelecting << " selected: " << idSelected << std::endl;
+        std::cout << piece_chosen << " " << !game.IsSamePlayer(idSelecting, idSelected) << " "
+                  << game.TrueChess(idSelected) << " idSelecting = " << idSelecting
+                  << " selected: " << idSelected << std::endl;
 
         // Click piece 2 times then remove selection
         if (idSelecting == idSelected) {
