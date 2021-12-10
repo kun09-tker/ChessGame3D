@@ -16,13 +16,15 @@
 
 ## Visual
 - *First view*
-!["Fisrt View"](/image/1.PNG)
+!["Fisrt View"](/image/1.png)
 - *Another view*
-!["Another View"](/image/2.PNG)
+!["Another View"](/image/2.png)
+- *Selection*
+!["Selection]("/image/2.1)
 - *Movement animation*
 !["Movement animation"](/image/3.0.png)
 - *Finish Movement*
-!["Finish"](/image/3.PNG)
+!["Finish"](/image/3.png)
 
 
 **Authors:** 
