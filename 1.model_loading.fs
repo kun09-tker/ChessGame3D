@@ -20,7 +20,6 @@ void main()
 {    
     if(Texture==1.0f)
         FragColor = texture(texture_diffuse1, TexCoords);
-        // FragColor =vec4(0.6f, 0.65f, 0.6f, 1.0f);
     else{
         // ambient
         float ambientStrength = 0.1;
