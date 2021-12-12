@@ -345,7 +345,7 @@ void processSelection(int xx, int yy) {
                  &res);
 
     // int resTemp = res;
-    std::cout << "Clicked on:" << res << std::endl;
+    // std::cout << "Clicked on:" << res << std::endl;
 
     if (res == 0) {
         game.setSelected(idSelected, false);
